@@ -11,7 +11,7 @@ Message format:
 
 """
 def form_message(message=None):
-    request = message + '\n'
+    request = message.strip('\n') + '\n'
     return request.encode()
 
 def receive_data(s):
