@@ -1,12 +1,19 @@
 import sys
 import socket
 import threading
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 
 MAX_CONNECTIONS = 5
+MAX_WORKERS = 5
+TIMEOUT = 60
 
 port = 8000
+running = True
+
+def kill_server():
+    global running
+    running = False
 
 def generate_response(message, address):
     response = "Default message"
@@ -16,13 +23,13 @@ def generate_response(message, address):
         port = ("Port: {}\n").format(address[1])
         student_id = "StudentID: 133323317\n"
         response = message + ip + port + student_id
-
     elif message == "KILL_SERVICE\n":
-        response = "TERMINATING..."
-
+        response = "TERMINATING...\n"
+        kill_server()
     return response
 
 def handle_request(clientsocket, address, timeout):
+    print("Handling")
     request = clientsocket.recv(4096).decode()
     response = generate_response(request, address)
 
@@ -30,7 +37,9 @@ def handle_request(clientsocket, address, timeout):
     clientsocket.close()
 
 def main():
+    global running
     port = int(sys.argv[1])
+    executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
     # Start the server
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,10 +54,14 @@ def main():
         print(e)
         sys.exit(1)
 
-    while True:
+    while running:
+        print(running)
         (clientsocket, address) = server.accept()
-        threading.Thread(target=handle_request, args=(clientsocket, address, 60)).start()
+        thread = executor.submit(handle_request, clientsocket, address, 5)
+        #threading.Thread(target=handle_request, args=(clientsocket, address, 60)).start()
     server.close()
+    print("Terminating...")
+    sys.exit(1)
 
 
 if __name__ == '__main__':
