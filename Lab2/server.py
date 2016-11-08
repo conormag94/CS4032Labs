@@ -1,13 +1,15 @@
 import sys
 import socket
 import threading
+
 from concurrent.futures import ThreadPoolExecutor
 
-
+# Constants
 MAX_CONNECTIONS = 5
 MAX_WORKERS = 5
 TIMEOUT = 60
 
+# Global variables
 port = 8000
 running = True
 
@@ -29,36 +31,36 @@ def generate_response(message, address):
     return response
 
 def handle_request(clientsocket, address, timeout):
-    print("Handling")
     request = clientsocket.recv(4096).decode()
     response = generate_response(request, address)
-
+    print("[{},{}] - {}".format(address[0], address[1], request))
     clientsocket.send(response.encode())
     clientsocket.close()
 
 def main():
     global running
     port = int(sys.argv[1])
-    executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+
+    # Create new thread pool with maximum threads set to MAX_WORKERS
+    thread_pool = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+
     # Start the server
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server.bind(('', port))
         server.listen(MAX_CONNECTIONS)
-        print("Listening on port", port)
-        print("Ctrl+C to quit\n")
+        print("Listening on port", port, '\nCtrl+C to quit')
     except Exception as e:
         if server:
             server.close()
         print(e)
         sys.exit(1)
 
+    # Listen for incoming connections and pass off work to threads in pool
     while running:
-        print(running)
         (clientsocket, address) = server.accept()
-        thread = executor.submit(handle_request, clientsocket, address, 5)
-        #threading.Thread(target=handle_request, args=(clientsocket, address, 60)).start()
+        thread = thread_pool.submit(handle_request, clientsocket, address, TIMEOUT)
     server.close()
     print("Terminating...")
     sys.exit(1)
