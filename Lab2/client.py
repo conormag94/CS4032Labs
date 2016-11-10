@@ -1,7 +1,7 @@
 import sys
 import socket
 
-HOST = "localhost"
+HOST = "10.62.0.176"
 PORT = 8080
 
 """
