@@ -70,7 +70,7 @@ def main():
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind((get_server_ip(), get_port()))
+        server.bind(('', get_port()))
         server.listen(MAX_CONNECTIONS)
         print("Listening on port", port, '\nCtrl+C to quit')
     except Exception as e:
