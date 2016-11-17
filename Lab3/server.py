@@ -104,7 +104,7 @@ def get_request_type(message):
 # Parses the received message and generates the appropriate response
 def generate_response(message, desired_action):
 
-    response = "Default message"
+    response = "Default message\n"
     if desired_action == HELO:
         ip = ("IP:{}\n").format(get_server_ip())
         port = ("Port:{}\n").format(get_port())
@@ -114,13 +114,13 @@ def generate_response(message, desired_action):
         response = "TERMINATING...\n"
         kill_server()
     elif desired_action == JOIN_CHATROOM:
-        response = "You want to JOIN_CHATROOM"
+        response = "You want to JOIN_CHATROOM\n"
     elif desired_action == LEAVE_CHATROOM:
-        response = "You want to LEAVE_CHATROOM"
+        response = "You want to LEAVE_CHATROOM\n"
     elif desired_action == DISCONNECT:
-        response = "You want to DISCONNECT"
+        response = "You want to DISCONNECT\n"
     elif desired_action == MESSAGE_CHATROOM:
-        response = "You want to CHAT"
+        response = "You want to CHAT\n"
     return response
 
 def handle_request(clientsocket, address, timeout):
