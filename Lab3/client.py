@@ -22,15 +22,35 @@ def receive_data(s):
         else:
             return data.decode()
 
+def test_join(chatroom_name, client_name):
+    request = "JOIN_CHATROOM: {}\nCLIENT_IP: 0\nPORT: 0\nCLIENT_NAME: {}\n".format(chatroom_name, client_name)
+    return request.encode()
+
+def test_leave(chatroom_name, client_name):
+    request = "LEAVE_CHATROOM: {}\nJOIN_ID: 1\nCLIENT_NAME: {}\n".format(chatroom_name, client_name)
+    return request.encode()
+
 def main(arg=None):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
 
-    req = form_message(arg)
-    s.send(req)
+    #req = form_message(arg)
+    if sys.argv[-1] == "join":
+        req = test_join("Test Room", "Conor")
+        s.send(req)
+    if sys.argv[-1] == "leave":
+        req = test_leave("Test Room", "Conor")
+        s.send(req)
 
-    data = receive_data(s)
+    data = s.recv(4096).decode()
     print(data)
+
+    data = s.recv(4096).decode()
+    print(data)
+
+    # data = receive_data(s)
+    # print(data)
+
 
     s.close()
 
