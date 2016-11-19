@@ -52,6 +52,7 @@ disconnect nickname
 chat room nickname message
 """
 def main(arg=None):
+    HOST = arg
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
 

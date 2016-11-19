@@ -173,6 +173,7 @@ def generate_response(message, desired_action, chatroom=None, join_id=None):
     return response
 
 def handle_request(clientsocket, address, timeout):
+    print("Handling")
     while True:
         request = clientsocket.recv(4096).decode()
         if not request:
