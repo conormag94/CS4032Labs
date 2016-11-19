@@ -11,6 +11,7 @@ MAX_CONNECTIONS = 5
 MAX_WORKERS = 5
 TIMEOUT = 5
 
+# Action codes
 HELO = 0
 KILL_SERVICE = 1
 JOIN_CHATROOM = 2
@@ -18,7 +19,6 @@ LEAVE_CHATROOM = 3
 DISCONNECT = 4
 MESSAGE_CHATROOM = 5
 DEFAULT = -1
-
 
 # Global variables
 server_ip = '10.62.0.176'
@@ -83,6 +83,7 @@ class ChatRoom(object):
                 self.broadcast_message("{} [{}:{}] connected".format(new_client["nickname"], host, port))
             return new_client["id"]
         print(nickname, "already in chatroom")
+        return -1
 
     def remove_client(self, clientsocket, client_name):
         client_location = self.find_client_by_name(client_name)
@@ -99,9 +100,9 @@ class ChatRoom(object):
     def broadcast_message(self, message):
         for client in self.client_list:
             if client["nickname"] == "Server":
-                print("> " + message)
+                print("<" + self.name + ">: " + message)
             else:
-                client["socket"].sendall(("> " + message + "\n").encode())
+                client["socket"].sendall((message + "\n").encode())
 
     def print_clients(self):
         print("'{}' members:".format(self.name))
@@ -122,6 +123,14 @@ class ChatRoom(object):
         return -1
 
 
+def get_chatroom_index(chatroom_array, message):
+    first_line = message.split('\n')[0]
+    name = first_line.split(': ')[1]
+    for i in range(len(chatroom_array)):
+        if chatroom_array[i].name == name:
+            return i
+    return -1
+
 def get_request_type(message):
     request_type = DEFAULT
 
@@ -137,8 +146,8 @@ def get_request_type(message):
         request_type = DISCONNECT
     elif message[0:4] == "CHAT":
         request_type = MESSAGE_CHATROOM
-
     return request_type
+
 # Parses the received message and generates the appropriate response
 def generate_response(message, desired_action, chatroom=None, join_id=None):
 
@@ -159,42 +168,50 @@ def generate_response(message, desired_action, chatroom=None, join_id=None):
     elif desired_action == DISCONNECT:
         response = "You want to DISCONNECT\n"
     elif desired_action == MESSAGE_CHATROOM:
-        response = "You want to CHAT\n"
+        lines = message.split("\n")
+        response = lines[0] + "\n" + lines[2] + "\n" + lines[3] + "\n"
     return response
 
-def get_chatroom_index(chatroom_array, message):
-    first_line = message.split('\n')[0]
-    name = first_line.split(': ')[1]
-    for i in range(len(chatroom_array)):
-        if chatroom_array[i].name == name:
-            return i
-    return -1
-
 def handle_request(clientsocket, address, timeout):
-    request = clientsocket.recv(4096).decode()
-    desired_action = get_request_type(request)
+    while True:
+        request = clientsocket.recv(4096).decode()
+        if not request:
+            clientsocket.close()
+            break
+        desired_action = get_request_type(request)
 
-    # Actions where the client has specified a particular chat by name.
-    if desired_action in [JOIN_CHATROOM, LEAVE_CHATROOM, MESSAGE_CHATROOM]:
-        chatroom_index = get_chatroom_index(chatrooms, request)
-        current_room = chatrooms[chatroom_index]
+        # Actions where the client has specified a particular chat by name.
+        if desired_action in [JOIN_CHATROOM, LEAVE_CHATROOM, MESSAGE_CHATROOM]:
+            chatroom_index = get_chatroom_index(chatrooms, request)
+            current_room = chatrooms[chatroom_index]
 
-        if desired_action == JOIN_CHATROOM:
-            join_id = current_room.add_client(clientsocket, "Client1")
-            response = generate_response(request, desired_action, current_room, join_id)
-            clientsocket.sendall(response.encode())
-        elif desired_action == LEAVE_CHATROOM:
-            join_id = current_room.remove_client(clientsocket, "Client1")
-            response = generate_response(request, desired_action, current_room, join_id)
-            clientsocket.sendall(response.encode())
-            clientsocket.sendall("TODO: Remove this arbitrary second message\n".encode())
+            if desired_action == JOIN_CHATROOM:
+                client_name = request.split("\n")[3].split(": ")[1]
+                join_id = current_room.add_client(clientsocket, client_name)
+                if join_id == -1:
+                    response = "Already connected to " + current_room.name + "\n"
+                    clientsocket.sendall(response.encode())
+                else:
+                    response = generate_response(request, desired_action, current_room, join_id)
+                    clientsocket.sendall(response.encode())
+            elif desired_action == LEAVE_CHATROOM:
+                client_name = request.split("\n")[2].split(": ")[1]
+                join_id = current_room.remove_client(clientsocket, client_name)
+                response = generate_response(request, desired_action, current_room, join_id)
+                clientsocket.sendall(response.encode())
+            elif desired_action == MESSAGE_CHATROOM:
+                response = generate_response(request, desired_action, current_room)
+                current_room.broadcast_message(response)
+        elif desired_action == DISCONNECT:
+            client_name = request.split("\n")[2].split(": ")[1]
+            for room in chatrooms:
+                room.remove_client(clientsocket, client_name)
+            clientsocket.sendall("***Disconnecting***\n".encode())
+            (host, port) = clientsocket.getpeername()
+            clientsocket.close()
+            print("{} [{}:{}] disconnected from server".format(client_name, host, port))
 
-
-    #clientsocket.close()
-
-    # response = generate_response(request, desired_action)
-    # print("[{},{}] - {}".format(address[0], address[1], request).strip('\n'))
-    # clientsocket.sendall(response.encode())
+    print("Returning...")
 
 
 def main():
@@ -218,13 +235,12 @@ def main():
         print(e)
         sys.exit(1)
 
-    test_room = ChatRoom("Test Room", server)
+    test_room = ChatRoom("general", server)
     chatrooms.append(test_room)
 
     # Listen for incoming connections and pass off work to threads in pool
     while is_running():
         (clientsocket, address) = server.accept()
-        #test_room.broadcast_message("BROADCAST")
         thread = thread_pool.submit(handle_request, clientsocket, address, TIMEOUT)
     server.close()
     print("Terminating...")
