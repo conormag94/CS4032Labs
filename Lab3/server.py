@@ -75,12 +75,11 @@ class ChatRoom(object):
             self.client_list.append(new_client)
             self.next_client_id += 1
 
-            if not new_client["id"] == 0:
-                (host, port) = new_client["socket"].getpeername()
+            if new_client["id"] == 0:
+                host = get_server_ip
+                port = get_port
                 self.broadcast_message("{} [{}:{}] connected".format(new_client["nickname"], host, port))
-            else:
-                (host, port) = new_client["socket"].getsockname()
-                self.broadcast_message("{} [{}:{}] connected".format(new_client["nickname"], host, port))
+
             return new_client["id"]
         print(nickname, "already in chatroom")
         return -1
@@ -93,7 +92,7 @@ class ChatRoom(object):
             nickname = client["nickname"]
             self.client_list.remove(client)
             self.next_client_id -= 1
-            self.broadcast_message("{} [{}:{}] disconnected".format(nickname, host, port))
+            # self.broadcast_message("{} [{}:{}] disconnected".format(nickname, host, port))
             return client["id"]
 
 
@@ -179,7 +178,8 @@ def handle_request(clientsocket, address, timeout):
             clientsocket.close()
             break
         desired_action = get_request_type(request)
-
+        (host, port) = clientsocket.getpeername()
+        
         if desired_action == HELO:
             response = generate_response(request, HELO)
             clientsocket.sendall(response.encode())
@@ -201,11 +201,13 @@ def handle_request(clientsocket, address, timeout):
                 else:
                     response = generate_response(request, desired_action, current_room, join_id)
                     clientsocket.sendall(response.encode())
+                    current_room.broadcast_message("{} [{}:{}] connected".format(client_name, host, port))
             elif desired_action == LEAVE_CHATROOM:
                 client_name = request.split("\n")[2].split(": ")[1]
                 join_id = current_room.remove_client(clientsocket, client_name)
                 response = generate_response(request, desired_action, current_room, join_id)
                 clientsocket.sendall(response.encode())
+                current_room.broadcast_message("{} [{}:{}] disconnected".format(client_name, host, port))
             elif desired_action == MESSAGE_CHATROOM:
                 response = generate_response(request, desired_action, current_room)
                 current_room.broadcast_message(response)
