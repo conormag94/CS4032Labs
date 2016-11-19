@@ -222,7 +222,8 @@ def handle_request(clientsocket, address, timeout):
 
 
 def main():
-    set_port(int(sys.argv[1]))
+    set_server_ip(int(sys.argv[1]))
+    set_port(int(sys.argv[2]))
 
     # Create new thread pool with maximum threads set to MAX_WORKERS
     thread_pool = ThreadPoolExecutor(max_workers=MAX_WORKERS)
