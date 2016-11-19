@@ -159,7 +159,6 @@ def generate_response(message, desired_action, chatroom=None, join_id=None):
         response = message + ip + port + student_id
     elif desired_action == KILL_SERVICE:
         response = "TERMINATING...\n"
-        kill_server()
     elif desired_action == JOIN_CHATROOM:
         response = "JOINED_CHATROOM: {}\nSERVER_IP: {}\n".format(chatroom.name, get_server_ip())
         response += "PORT: {}\nROOM_REF: {}\nJOIN_ID: {}\n".format(get_port(), chatroom.room_ref, join_id)
@@ -181,6 +180,13 @@ def handle_request(clientsocket, address, timeout):
             break
         desired_action = get_request_type(request)
 
+        if desired_action == HELO:
+            response = generate_response(request, HELO)
+            clientsocket.sendall(response.encode())
+        elif desired_action == KILL_SERVICE:
+            response = generate_response(request, KILL_SERVICE)
+            clientsocket.sendall(response.encode())
+            kill_server()
         # Actions where the client has specified a particular chat by name.
         if desired_action in [JOIN_CHATROOM, LEAVE_CHATROOM, MESSAGE_CHATROOM]:
             chatroom_index = get_chatroom_index(chatrooms, request)
