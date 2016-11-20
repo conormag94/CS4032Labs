@@ -76,10 +76,9 @@ class ChatRoom(object):
             self.next_client_id += 1
 
             if new_client["id"] == 0:
-                host = get_server_ip
-                port = get_port
+                host = get_server_ip()
+                port = get_port()
                 self.broadcast_message("{} [{}:{}] connected".format(new_client["nickname"], host, port))
-
             return new_client["id"]
         print(nickname, "already in chatroom")
         return -1
@@ -179,7 +178,7 @@ def handle_request(clientsocket, address, timeout):
             break
         desired_action = get_request_type(request)
         (host, port) = clientsocket.getpeername()
-        
+
         if desired_action == HELO:
             response = generate_response(request, HELO)
             clientsocket.sendall(response.encode())
