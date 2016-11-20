@@ -78,7 +78,6 @@ class ChatRoom(object):
             if new_client["id"] == 0:
                 host = get_server_ip()
                 port = get_port()
-                self.broadcast_message("{} [{}:{}] connected".format(new_client["nickname"], host, port))
             return new_client["id"]
         print(nickname, "already in chatroom")
         return -1
@@ -161,7 +160,7 @@ def generate_response(message, desired_action, chatroom=None, join_id=None):
         response = "JOINED_CHATROOM: {}\nSERVER_IP: {}\n".format(chatroom.name, get_server_ip())
         response += "PORT: {}\nROOM_REF: {}\nJOIN_ID: {}\n".format(get_port(), chatroom.room_ref, join_id)
     elif desired_action == LEAVE_CHATROOM:
-        response = "LEFT_CHATROOM: {}\nJOIN_ID: {}\n".format(chatroom.name, join_id)
+        response = "LEFT_CHATROOM: {}\nJOIN_ID:{}\n".format(chatroom.room_ref, join_id)
     elif desired_action == DISCONNECT:
         response = "You want to DISCONNECT\n"
     elif desired_action == MESSAGE_CHATROOM:
@@ -200,13 +199,17 @@ def handle_request(clientsocket, address, timeout):
                 else:
                     response = generate_response(request, desired_action, current_room, join_id)
                     clientsocket.sendall(response.encode())
-                    current_room.broadcast_message("{} [{}:{}] connected".format(client_name, host, port))
+                    current_room.broadcast_message("CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {} has joined this chatroom.\n".format(current_room.room_ref, client_name, client_name))
             elif desired_action == LEAVE_CHATROOM:
                 client_name = request.split("\n")[2].split(": ")[1]
                 join_id = current_room.remove_client(clientsocket, client_name)
                 response = generate_response(request, desired_action, current_room, join_id)
+                print("*****\n" + response + "*****")
                 clientsocket.sendall(response.encode())
-                current_room.broadcast_message("{} [{}:{}] disconnected".format(client_name, host, port))
+                current_room.broadcast_message("CHAT: {}\nCLIENT_NAME: {}\nMESSAGE: {} has left this chatroom\n".format(current_room.room_ref, client_name, client_name))
+                #TODO: Remove
+                print("Breaking")
+                break
             elif desired_action == MESSAGE_CHATROOM:
                 response = generate_response(request, desired_action, current_room)
                 current_room.broadcast_message(response)
@@ -223,7 +226,7 @@ def handle_request(clientsocket, address, timeout):
 
 
 def main():
-    set_server_ip(int(sys.argv[1]))
+    set_server_ip(sys.argv[1])
     set_port(int(sys.argv[2]))
 
     # Create new thread pool with maximum threads set to MAX_WORKERS
@@ -244,7 +247,7 @@ def main():
         print(e)
         sys.exit(1)
 
-    test_room = ChatRoom("general", server)
+    test_room = ChatRoom("room1", server)
     chatrooms.append(test_room)
 
     # Listen for incoming connections and pass off work to threads in pool
