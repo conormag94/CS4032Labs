@@ -1,6 +1,7 @@
 module Main where
 
-import Lib
+--import Lib
+import FileServer
 
 main :: IO ()
-main = startApp
+main = run 8080 app
