@@ -7,7 +7,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module FileServer(app) where
+module FileServer
+  (startApp)
+  where
 
 import Prelude ()
 import Prelude.Compat
@@ -34,6 +36,9 @@ import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
 type StaticAPI = "static" :> Raw
+
+startApp :: IO ()
+startApp = run 8080 app
 
 staticAPI :: Proxy StaticAPI
 staticAPI = Proxy

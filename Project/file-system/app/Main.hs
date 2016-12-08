@@ -4,4 +4,4 @@ module Main where
 import FileServer
 
 main :: IO ()
-main = run 8080 app
+main = startApp
