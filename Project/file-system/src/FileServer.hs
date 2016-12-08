@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeOperators #-}
 
 module FileServer
-  (startApp)
+  (startFileServer)
   where
 
 import Prelude ()
@@ -37,8 +37,8 @@ import qualified Text.Blaze.Html
 
 type StaticAPI = "static" :> Raw
 
-startApp :: IO ()
-startApp = run 8080 app
+startFileServer :: IO ()
+startFileServer = run 8080 app
 
 staticAPI :: Proxy StaticAPI
 staticAPI = Proxy
