@@ -1,0 +1,1 @@
+curl -X POST -d '{"name":"post.txt", "content":"I uploaded this myself"}' -H 'Accept: application/json' -H 'Content-type: application/json' http://localhost:8080/upload

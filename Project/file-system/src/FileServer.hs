@@ -39,12 +39,19 @@ import qualified Text.Blaze.Html
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
+baseDirectory = "./static-files/"
+
 data File = File { name :: String
                  , content :: TL.Text
 } deriving (Generic)
 
 instance ToJSON File
 instance FromJSON File
+
+data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
+
+instance ToJSON ResponseMessage
+instance FromJSON ResponseMessage
 
 testFile1 :: File
 testFile1 = File "test1.txt" "This is test file number 1"
@@ -55,28 +62,35 @@ testFile2 = File "test2.txt" "The second test file"
 fileList :: [File]
 fileList = [testFile1, testFile2]
 
-type API = "files" :> Get '[JSON] [File]
-      :<|> "test1" :> Get '[JSON] File
+type API = "files" :> Capture "filename" String :> Get '[JSON] File
+      :<|> "upload" :> ReqBody '[JSON] File :> Post '[JSON] ResponseMessage
       :<|> "getReadme" :> Get '[JSON] File
 
 startFileServer :: IO ()
 startFileServer = run 8080 app
 
 server :: Server API
-server = files
-    :<|> test1
+server = getFile
+    :<|> uploadFile
     :<|> getReadme
 
-  where files :: Handler [File]
-        files = return fileList
+  where 
+    getFile :: String -> Handler File
+    getFile fname = liftIO $ do
+      let fpath = baseDirectory ++ fname
+      _content <- TextIO.readFile fpath
+      return $ File {name = fname, content = _content}
 
-        test1 :: Handler File
-        test1 = return testFile1
+    uploadFile :: File -> Handler ResponseMessage
+    uploadFile nf = liftIO $ do
+      let fpath = baseDirectory ++ (name nf)
+      TextIO.writeFile fpath (content nf)
+      return $ ResponseMessage {response = "File written"}
 
-        getReadme :: Handler File
-        getReadme = liftIO $ do 
-          contents <- TextIO.readFile "./static-files/test.txt" 
-          return $ File "test.txt" contents
+    getReadme :: Handler File
+    getReadme = liftIO $ do 
+      contents <- TextIO.readFile "./static-files/test.txt" 
+      return $ File "test.txt" contents
 
 
 fileApi :: Proxy API
