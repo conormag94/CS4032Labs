@@ -39,9 +39,6 @@ import qualified Text.Blaze.Html
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
-
-portnumber = 8080
-
 data File = File { name :: String
                  , content :: TL.Text
 } deriving (Generic)
