@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -35,16 +36,36 @@ import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
-type StaticAPI = "static" :> Raw
+
+data File = File { name :: String
+                 , body :: String
+} deriving (Generic, FromJSON, ToJSON)
+
+
+
+test1 :: File
+test1 = File "test1.txt" "This is test file number 1"
+
+test2 :: File
+test2 = File "test2.txt" "The second test file"
+
+fileList :: [File]
+fileList = [test1, test2]
+
+type FileApi = "files" :> Get '[JSON] [File]
+          :<|> "test1" :> Get '[JSON] File
+          :<|> "test2" :> Get '[JSON] String
 
 startFileServer :: IO ()
 startFileServer = run 8080 app
 
-staticAPI :: Proxy StaticAPI
-staticAPI = Proxy
+fileApi :: Proxy FileApi
+fileApi = Proxy
 
-server :: Server StaticAPI
-server = serveDirectory "static-files"
+server :: Server FileApi
+server = return fileList
+    :<|> return test1
+    :<|> return (body test2)
 
 app :: Application
-app = serve staticAPI server
+app = serve fileApi server
