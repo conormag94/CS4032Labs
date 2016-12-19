@@ -37,35 +37,48 @@ import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
 
+portnumber = 8080
+
 data File = File { name :: String
-                 , body :: String
-} deriving (Generic, FromJSON, ToJSON)
+                 , content :: String
+} deriving (Generic)
 
+instance ToJSON File
+instance FromJSON File
 
+testFile1 :: File
+testFile1 = File "test1.txt" "This is test file number 1"
 
-test1 :: File
-test1 = File "test1.txt" "This is test file number 1"
-
-test2 :: File
-test2 = File "test2.txt" "The second test file"
+testFile2 :: File
+testFile2 = File "test2.txt" "The second test file"
 
 fileList :: [File]
-fileList = [test1, test2]
+fileList = [testFile1, testFile2]
 
-type FileApi = "files" :> Get '[JSON] [File]
-          :<|> "test1" :> Get '[JSON] File
-          :<|> "test2" :> Get '[JSON] String
+type API = "files" :> Get '[JSON] [File]
+      :<|> "test1" :> Get '[JSON] File
+      :<|> "test2" :> Get '[JSON] String
 
 startFileServer :: IO ()
 startFileServer = run 8080 app
 
-fileApi :: Proxy FileApi
-fileApi = Proxy
+server :: Server API
+server = files
+    :<|> test1
+    :<|> test2
 
-server :: Server FileApi
-server = return fileList
-    :<|> return test1
-    :<|> return (body test2)
+  where files :: Handler [File]
+        files = return fileList
+
+        test1 :: Handler File
+        test1 = return testFile1
+
+        test2 :: Handler String
+        test2 = return $ content testFile2
+
+
+fileApi :: Proxy API
+fileApi = Proxy
 
 app :: Application
 app = serve fileApi server
