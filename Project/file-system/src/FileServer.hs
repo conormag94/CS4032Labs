@@ -35,6 +35,8 @@ import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
+--type FileAPI = "file" :> QueryParam "filename" String :> Get '[JSON] Something  
+
 type StaticAPI = "static" :> Raw
 
 startFileServer :: IO ()
