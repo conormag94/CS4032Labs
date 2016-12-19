@@ -23,6 +23,7 @@ library
                      , attoparsec
                      , bytestring
                      , string-conversions
+                     , text
                      , time
                      , http-media
                      , directory

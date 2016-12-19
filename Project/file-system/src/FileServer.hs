@@ -36,11 +36,14 @@ import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TextIO
+
 
 portnumber = 8080
 
 data File = File { name :: String
-                 , content :: String
+                 , content :: TL.Text
 } deriving (Generic)
 
 instance ToJSON File
@@ -57,7 +60,7 @@ fileList = [testFile1, testFile2]
 
 type API = "files" :> Get '[JSON] [File]
       :<|> "test1" :> Get '[JSON] File
-      :<|> "test2" :> Get '[JSON] String
+      :<|> "getReadme" :> Get '[JSON] File
 
 startFileServer :: IO ()
 startFileServer = run 8080 app
@@ -65,7 +68,7 @@ startFileServer = run 8080 app
 server :: Server API
 server = files
     :<|> test1
-    :<|> test2
+    :<|> getReadme
 
   where files :: Handler [File]
         files = return fileList
@@ -73,8 +76,10 @@ server = files
         test1 :: Handler File
         test1 = return testFile1
 
-        test2 :: Handler String
-        test2 = return $ content testFile2
+        getReadme :: Handler File
+        getReadme = liftIO $ do 
+          contents <- TextIO.readFile "./static-files/test.txt" 
+          return $ File "test.txt" contents
 
 
 fileApi :: Proxy API
