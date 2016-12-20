@@ -62,16 +62,22 @@ testFile2 = File "test2.txt" "The second test file"
 fileList :: [File]
 fileList = [testFile1, testFile2]
 
+--TODO: Figure out the proper HTTP verbs and proper response types for each endpoint
 type API = "files" :> Capture "filename" String :> Get '[JSON] File
       :<|> "upload" :> ReqBody '[JSON] File :> Post '[JSON] ResponseMessage
+      :<|> "delete" :> Capture "file" String :> Get '[JSON] ResponseMessage
+      :<|> "modify" :> ReqBody '[JSON] File :> Post '[JSON] File
       :<|> "getReadme" :> Get '[JSON] File
 
 startFileServer :: IO ()
 startFileServer = run 8080 app
 
+--TODO: Figure out error codes instead of manually sending error messages
 server :: Server API
 server = getFile
     :<|> uploadFile
+    :<|> deleteFile
+    :<|> modifyFile
     :<|> getReadme
 
   where 
@@ -86,6 +92,28 @@ server = getFile
       let fpath = baseDirectory ++ (name nf)
       TextIO.writeFile fpath (content nf)
       return $ ResponseMessage {response = "File written"}
+
+    deleteFile :: String -> Handler ResponseMessage
+    deleteFile fname = liftIO $ do
+      fileExists <- doesFileExist (baseDirectory ++ fname)
+      case fileExists of
+        True -> do 
+          (removeFile (baseDirectory ++ fname))
+          return $ ResponseMessage {response = (fname ++ " deleted")}
+        False -> do
+          return $ ResponseMessage {response = (fname ++ " not found on server")}
+
+    --TODO: figure out a better way of writing and returning a response
+    modifyFile :: File -> Handler File
+    modifyFile f = liftIO $ do
+      let fpath = baseDirectory ++ (name f)
+      fileExists <- doesFileExist fpath
+      case fileExists of
+        True -> do
+          TextIO.writeFile fpath (content f)
+          return $ File {name = (name f), content = (content f)}
+        False -> do
+          return $ File {name = "", content = "File not found"}
 
     getReadme :: Handler File
     getReadme = liftIO $ do 
