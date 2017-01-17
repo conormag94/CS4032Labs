@@ -70,7 +70,9 @@ type API = "files" :> Capture "filename" String :> Get '[JSON] File
       :<|> "getReadme" :> Get '[JSON] File
 
 startFileServer :: IO ()
-startFileServer = run 8080 app
+startFileServer = do 
+  putStrLn "Running on localhost:8080"
+  run 8080 app
 
 --TODO: Figure out error codes instead of manually sending error messages
 server :: Server API
