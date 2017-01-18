@@ -8,8 +8,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module FileServer
-  (startFileServer)
+module FileServer(
+  File(..), ResponseMessage(..), API(..), 
+  startFileServer)
   where
 
 import Prelude ()
