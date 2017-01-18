@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/bin"
-libdir     = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/lib/x86_64-osx-ghc-8.0.1/client-0.1.0.0-DIQLwlwndko5ok7IgZ1e13"
+libdir     = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/lib/x86_64-osx-ghc-8.0.1/client-0.1.0.0-1fXPFiwfmTb1YwAZy9y3qf"
 datadir    = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/share/x86_64-osx-ghc-8.0.1/client-0.1.0.0"
 libexecdir = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/libexec"
 sysconfdir = "/Users/Conor/College/CS4032-Distributed Systems/CS4032Labs/Project/client/.stack-work/install/x86_64-osx/lts-7.9/8.0.1/etc"

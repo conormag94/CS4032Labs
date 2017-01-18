@@ -35,6 +35,27 @@
   (major1) == 0 && (major2) <  1 || \
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 
+/* package http-client-0.4.31.1 */
+#define VERSION_http_client "0.4.31.1"
+#define MIN_VERSION_http_client(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  4 || \
+  (major1) == 0 && (major2) == 4 && (minor) <= 31)
+
+/* package servant-0.8.1 */
+#define VERSION_servant "0.8.1"
+#define MIN_VERSION_servant(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  8 || \
+  (major1) == 0 && (major2) == 8 && (minor) <= 1)
+
+/* package servant-client-0.8.1 */
+#define VERSION_servant_client "0.8.1"
+#define MIN_VERSION_servant_client(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  8 || \
+  (major1) == 0 && (major2) == 8 && (minor) <= 1)
+
 /* package servant-server-0.8.1 */
 #define VERSION_servant_server "0.8.1"
 #define MIN_VERSION_servant_server(major1,major2,minor) (\
@@ -126,7 +147,7 @@
   (major1) == 0 && (major2) <  29 || \
   (major1) == 0 && (major2) == 29 && (minor) <= 1)
 
-#define CURRENT_COMPONENT_ID "client-0.1.0.0-DIQLwlwndko5ok7IgZ1e13"
+#define CURRENT_COMPONENT_ID "client-0.1.0.0-1fXPFiwfmTb1YwAZy9y3qf"
 
-#define CURRENT_PACKAGE_KEY "client-0.1.0.0-DIQLwlwndko5ok7IgZ1e13"
+#define CURRENT_PACKAGE_KEY "client-0.1.0.0-1fXPFiwfmTb1YwAZy9y3qf"
 

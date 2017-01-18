@@ -21,6 +21,9 @@ library
                      , aeson
                      , ansi-terminal
                      , file-system
+                     , http-client
+                     , servant
+                     , servant-client
                      , servant-server
                      , wai
                      , warp

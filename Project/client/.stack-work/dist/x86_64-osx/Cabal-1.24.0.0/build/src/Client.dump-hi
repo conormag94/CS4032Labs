@@ -1,10 +1,10 @@
 
 ==================== FINAL INTERFACE ====================
-2017-01-17 19:58:42.666829 UTC
+2017-01-18 16:43:42.729097 UTC
 
 interface client-0.1.0.0-DIQLwlwndko5ok7IgZ1e13:Client 8001
-  interface hash: 9420861b7326be116c3a91ea0a0397d8
-  ABI hash: 73f3486a97111a82b00a735d3cf69d71
+  interface hash: 0f1010e79297f985c82493ee6734b424
+  ABI hash: 3e0795229c7e8c1896d53f31ba712145
   export-list hash: 3c5eb62eb8f9b2d751aa0a67128aea92
   orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
   flag hash: e8266cae4bd0841f3d456b79c41be9b1
@@ -149,6 +149,8 @@ import  -/  ansi-terminal-0.6.2.3@ansi-terminal-0.6.2.3-448ipfN5j28Ha0AgPiJmdI:S
 import  -/  ansi-terminal-0.6.2.3@ansi-terminal-0.6.2.3-448ipfN5j28Ha0AgPiJmdI:System.Console.ANSI.Unix 27d28df4076211715f9e8c3aa4c39751
 import  -/  base-4.9.0.0:Data.OldList 0058409f994fb13ae0616e3f1e5b4dae
 import  -/  base-4.9.0.0:GHC.Base 8ed3be81c0707b322f975a84ae1bb816
+import  -/  base-4.9.0.0:GHC.IO.Handle a1938753d58593f0a419f85b67aa7cd3
+import  -/  base-4.9.0.0:GHC.IO.Handle.FD 13b7a4e1f414dd38346bde554423bf4b
 import  -/  base-4.9.0.0:GHC.List 13d2451194c1c6e53b4f4f07947736dd
 import  -/  base-4.9.0.0:Prelude b9bddb97799837fe67a8d00939a5b6c3
 import  -/  base-4.9.0.0:System.IO ad985d7a3fc986e9b9c610fb344d9106
@@ -172,17 +174,17 @@ a2c3d0fd49363c7ee42876c8edc94a80
   {- HasNoCafRefs, Strictness: m1,
      Unfolding: (GHC.Types.TrNameS
                    "client-0.1.0.0-DIQLwlwndko5ok7IgZ1e13"#) -}
-6b31a276d46e6ca7842299ca676dd472
+c749940bff3b954b3e0c495eb64e40c0
   resetCode :: GHC.Base.String
   {- Unfolding: (System.Console.ANSI.Unix.csi
-                   Client.startClient22
+                   Client.startClient5
                    System.Console.ANSI.Unix.setSGRCode1) -}
-cf207fae880ffa477290c2723ef116c2
+0c2d0a1ef4feb00fe3f1d95e43c91fcb
   startClient :: GHC.Types.IO ()
   {- Arity: 1, Strictness: <S,U>,
      Unfolding: InlineRule (0, True, True)
                 Client.startClient1 `cast` (Sym (GHC.Types.N:IO[0] <()>_R)) -}
-a9b2387d139fa96d145e3269ea6038e6
+3914c7581c0b63aeb55d50b05d699031
   startClient1 ::
     GHC.Prim.State# GHC.Prim.RealWorld
     -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
@@ -190,244 +192,119 @@ a9b2387d139fa96d145e3269ea6038e6
      Unfolding: (\ (s :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
                  case GHC.IO.Handle.Text.hPutStr2
                         GHC.IO.Handle.FD.stdout
-                        Client.startClient28
+                        Client.startClient13
                         GHC.Types.True
                         s of ds1 { (#,#) ipv ipv1 ->
                  case GHC.IO.Handle.Text.hPutStr2
                         GHC.IO.Handle.FD.stdout
-                        Client.startClient20
+                        Client.startClient3
                         GHC.Types.True
                         ipv of ds2 { (#,#) ipv2 ipv3 ->
-                 case GHC.IO.Handle.Internals.wantReadableHandle_1
-                        @ GHC.Base.String
-                        GHC.IO.Handle.Text.hGetLine4
-                        GHC.IO.Handle.FD.stdin
-                        GHC.IO.Handle.Text.hGetLine2
-                          `cast`
-                        (<GHC.IO.Handle.Types.Handle__>_R
-                         ->_R Sym (GHC.Types.N:IO[0] <GHC.Base.String>_R))
-                        ipv2 of ds3 { (#,#) ipv4 ipv5 ->
-                 let {
-                   ds :: [GHC.Types.Char]
-                   = Data.OldList.wordsFB
-                       @ [GHC.Types.Char]
-                       Client.startClient19
-                       (GHC.List.badHead @ [GHC.Types.Char])
-                       ipv5
-                 } in
-                 case GHC.Base.eqString ds Client.startClient18 of wild {
-                   GHC.Types.False
-                   -> case GHC.Base.eqString ds Client.startClient17 of wild1 {
-                        GHC.Types.False
-                        -> case GHC.Base.eqString ds Client.startClient16 of wild2 {
-                             GHC.Types.False
-                             -> case GHC.Base.eqString ds Client.startClient15 of wild3 {
-                                  GHC.Types.False
-                                  -> case GHC.IO.Handle.Text.hPutStr2
-                                            GHC.IO.Handle.FD.stdout
-                                            Client.startClient6
-                                            GHC.Types.True
-                                            ipv4 of ds4 { (#,#) ipv6 ipv7 ->
-                                     GHC.IO.Handle.Text.hPutStr2
-                                       GHC.IO.Handle.FD.stdout
-                                       Client.startClient20
-                                       GHC.Types.True
-                                       ipv6 }
-                                  GHC.Types.True
-                                  -> GHC.IO.Handle.Text.hPutStr2
-                                       GHC.IO.Handle.FD.stdout
-                                       Client.startClient5
-                                       GHC.Types.True
-                                       ipv4 }
-                             GHC.Types.True
-                             -> GHC.IO.Handle.Text.hPutStr2
-                                  GHC.IO.Handle.FD.stdout
-                                  Client.startClient4
-                                  GHC.Types.True
-                                  ipv4 }
-                        GHC.Types.True
-                        -> GHC.IO.Handle.Text.hPutStr2
-                             GHC.IO.Handle.FD.stdout
-                             Client.startClient3
-                             GHC.Types.True
-                             ipv4 }
-                   GHC.Types.True
-                   -> GHC.IO.Handle.Text.hPutStr2
-                        GHC.IO.Handle.FD.stdout
-                        Client.startClient2
-                        GHC.Types.True
-                        ipv4 } } } }) -}
-21c3b09750ff55ee3045eadca686dde9
-  startClient10 :: [GHC.Types.Int]
-  {- Unfolding: (GHC.Types.:
-                   @ GHC.Types.Int
-                   Client.startClient11
-                   (GHC.Types.[] @ GHC.Types.Int)) -}
-83e996fa0adc40d839d383082b0fdb2b
-  startClient11 :: GHC.Types.Int
-  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
-                        Client.startClient12 of ww { DEFAULT ->
-                 GHC.Types.I# ww }) -}
-f89904994982fbef23b40a645d6d3a3e
-  startClient12 :: System.Console.ANSI.Common.SGR
-  {- HasNoCafRefs,
-     Unfolding: (System.Console.ANSI.Common.SetColor
-                   System.Console.ANSI.Common.Foreground
-                   System.Console.ANSI.Common.Vivid
-                   System.Console.ANSI.Common.Red) -}
-ecfea96640a0b60aa920e21d235a154a
-  startClient13 :: GHC.Types.Int
-  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
-                        Client.startClient14 of ww { DEFAULT ->
-                 GHC.Types.I# ww }) -}
-c496bb0ddb2cfda97172ddf24b563a91
-  startClient14 :: System.Console.ANSI.Common.SGR
-  {- HasNoCafRefs,
-     Unfolding: (System.Console.ANSI.Common.SetConsoleIntensity
-                   System.Console.ANSI.Common.BoldIntensity) -}
-b34caff76215e37bf4a2ecf3e651c437
-  startClient15 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "put"#) -}
-710c5875928dc2f87e36f0a346debd71
-  startClient16 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "post"#) -}
-2f6bdc78b2cbdea19c2655580a530755
-  startClient17 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "get"#) -}
-f9437b74c197390a872e6f76e31fbb2a
-  startClient18 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "delete"#) -}
-bf3d794934646b537a2d39123a786df5
-  startClient19 ::
-    [GHC.Types.Char] -> [GHC.Types.Char] -> [GHC.Types.Char]
-  {- Arity: 2, HasNoCafRefs,
-     Unfolding: (\ (x :: [GHC.Types.Char])
-                   (ds :: [GHC.Types.Char])[OneShot] ->
-                 x) -}
-49141ca0dff38f49b1a8fa029802f7e2
-  startClient2 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   "You want to delete something"#) -}
-b979028eb3fb75dc95d4fed60d4536f0
-  startClient20 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.Base.++
-                   @ GHC.Types.Char
-                   Client.yellowCode
-                   Client.startClient21) -}
-a5407d70034a752c5c925a59d43c7d42
-  startClient21 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackAppendCString#
-                   "Usage: get, post, put, delete"#
-                   Client.resetCode) -}
-9a38276a1d6dc3607cb6c9cf2fa4b4ae
-  startClient22 :: [GHC.Types.Int]
-  {- Unfolding: (GHC.Types.:
-                   @ GHC.Types.Int
-                   Client.startClient23
-                   (GHC.Types.[] @ GHC.Types.Int)) -}
-1e35908de9badea040cb1a26d73497fe
-  startClient23 :: GHC.Types.Int
-  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
-                        System.Console.ANSI.Common.Reset of ww { DEFAULT ->
-                 GHC.Types.I# ww }) -}
-76d725019bc9265ab9c889b2cd4c9214
-  startClient24 :: [GHC.Types.Int]
-  {- Unfolding: (GHC.Types.:
-                   @ GHC.Types.Int
-                   Client.startClient13
-                   Client.startClient25) -}
-dfc2a90b49eb7c4dad3023842add23ea
-  startClient25 :: [GHC.Types.Int]
-  {- Unfolding: (GHC.Types.:
-                   @ GHC.Types.Int
-                   Client.startClient26
-                   (GHC.Types.[] @ GHC.Types.Int)) -}
-1e7f2df90b346da0dcd21b2fa938f886
-  startClient26 :: GHC.Types.Int
-  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
-                        Client.startClient27 of ww { DEFAULT ->
-                 GHC.Types.I# ww }) -}
-9bf915ed37acb7043f12477aa2d5d092
-  startClient27 :: System.Console.ANSI.Common.SGR
+                 Client.startClient2 ipv2 } }) -}
+544bdeda8b663cf3d6c54d64ef13cab4
+  startClient10 :: System.Console.ANSI.Common.SGR
   {- HasNoCafRefs,
      Unfolding: (System.Console.ANSI.Common.SetColor
                    System.Console.ANSI.Common.Foreground
                    System.Console.ANSI.Common.Vivid
                    System.Console.ANSI.Common.Yellow) -}
-91985dd204e56bfe8e311084aec5c81b
-  startClient28 :: [GHC.Types.Char]
+16da9723c596adc768df424e499ab6be
+  startClient11 :: GHC.Types.Int
+  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
+                        Client.startClient12 of ww { DEFAULT ->
+                 GHC.Types.I# ww }) -}
+65831060510ef08f07f065284ae8c737
+  startClient12 :: System.Console.ANSI.Common.SGR
+  {- HasNoCafRefs,
+     Unfolding: (System.Console.ANSI.Common.SetConsoleIntensity
+                   System.Console.ANSI.Common.BoldIntensity) -}
+017d492313e01d51b124320b57ffc1d9
+  startClient13 :: [GHC.Types.Char]
   {- Unfolding: (GHC.Base.++
                    @ GHC.Types.Char
-                   Client.startClient30
-                   Client.startClient29) -}
-40b222fcc215877098db92d1c4685172
-  startClient29 :: [GHC.Types.Char]
+                   Client.startClient15
+                   Client.startClient14) -}
+0c5a6ab95ff5ae63380ceeadf114534b
+  startClient14 :: [GHC.Types.Char]
   {- Unfolding: (GHC.CString.unpackCString#
                    "=== Distributed File System Client ==="#) -}
-acb6697f37111bdae9a57f10b188406f
-  startClient3 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   "You want to get got"#) -}
-f5da1d0548b79d03a3bf8029edc66509
-  startClient30 :: GHC.Base.String
+ceed430fc8c4bc06e0336c15b278c49b
+  startClient15 :: GHC.Base.String
   {- Unfolding: (System.Console.ANSI.Unix.csi
-                   Client.startClient31
+                   Client.startClient16
                    System.Console.ANSI.Unix.setSGRCode1) -}
-8a8ad77eb6ba16b585324d6e12b6e016
-  startClient31 :: [GHC.Types.Int]
+13626867e4eeec66932699eaeea73ce1
+  startClient16 :: [GHC.Types.Int]
   {- Unfolding: (GHC.Types.:
                    @ GHC.Types.Int
-                   Client.startClient13
-                   Client.startClient32) -}
-726866a339b05eddba214a3bc25c551b
-  startClient32 :: [GHC.Types.Int]
+                   Client.startClient11
+                   Client.startClient17) -}
+1dc79a7330473204de5cba651eb17e76
+  startClient17 :: [GHC.Types.Int]
   {- Unfolding: (GHC.Types.:
                    @ GHC.Types.Int
-                   Client.startClient33
+                   Client.startClient18
                    (GHC.Types.[] @ GHC.Types.Int)) -}
-d058e550969ab1f29312abac48290580
-  startClient33 :: GHC.Types.Int
+e6e728ea7c0b3b0f2e4e982e42b13d8f
+  startClient18 :: GHC.Types.Int
   {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
-                        Client.startClient34 of ww { DEFAULT ->
+                        Client.startClient19 of ww { DEFAULT ->
                  GHC.Types.I# ww }) -}
-a63fb76121e467c80d22e508aa1c92f3
-  startClient34 :: System.Console.ANSI.Common.SGR
+f997583533b93bbd7422fc40dc49ada4
+  startClient19 :: System.Console.ANSI.Common.SGR
   {- HasNoCafRefs,
      Unfolding: (System.Console.ANSI.Common.SetColor
                    System.Console.ANSI.Common.Foreground
                    System.Console.ANSI.Common.Vivid
                    System.Console.ANSI.Common.Blue) -}
-63b9c610840704ed18fd9c0ce3bf4000
-  startClient4 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "Postman pat"#) -}
-839a96feb9bab020612cd3eb926830d2
-  startClient5 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString# "Put it there"#) -}
-f9c98bb2ba8768d5bd362149fdccc621
-  startClient6 :: [GHC.Types.Char]
+944a5157acc798794e1dcf312c775db6
+  startClient2 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 1, Strictness: <S,U> -}
+df7221734a780fb3a1ce9ed2c6355b5b
+  startClient3 :: [GHC.Types.Char]
   {- Unfolding: (GHC.Base.++
                    @ GHC.Types.Char
-                   Client.startClient8
-                   Client.startClient7) -}
-848222a4769ef1c5aded110cf94e3ddc
-  startClient7 :: [GHC.Types.Char]
-  {- Unfolding: (GHC.CString.unpackCString#
-                   "Not a valid command"#) -}
-20c53ef229b6071703653f7fbaf71444
-  startClient8 :: GHC.Base.String
-  {- Unfolding: (System.Console.ANSI.Unix.csi
-                   Client.startClient9
-                   System.Console.ANSI.Unix.setSGRCode1) -}
-36bce997480516249e18d1acbebd2f55
-  startClient9 :: [GHC.Types.Int]
+                   Client.yellowCode
+                   Client.startClient4) -}
+9dbcd238b3b4920977855a3cc3835139
+  startClient4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackAppendCString#
+                   "Usage: get, post, put, delete"#
+                   Client.resetCode) -}
+6e6ace0b9d49e4869f0b3d303474f944
+  startClient5 :: [GHC.Types.Int]
   {- Unfolding: (GHC.Types.:
                    @ GHC.Types.Int
-                   Client.startClient13
-                   Client.startClient10) -}
-7bb8c10b3e9127133be95c393dc48597
+                   Client.startClient6
+                   (GHC.Types.[] @ GHC.Types.Int)) -}
+a933780e14204fdede61261a16a12bf3
+  startClient6 :: GHC.Types.Int
+  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
+                        System.Console.ANSI.Common.Reset of ww { DEFAULT ->
+                 GHC.Types.I# ww }) -}
+93e01f9add1bef0f7dbded5f67f3397a
+  startClient7 :: [GHC.Types.Int]
+  {- Unfolding: (GHC.Types.:
+                   @ GHC.Types.Int
+                   Client.startClient11
+                   Client.startClient8) -}
+c9d43c36ab8105e8c4fb0cef0d9f01b5
+  startClient8 :: [GHC.Types.Int]
+  {- Unfolding: (GHC.Types.:
+                   @ GHC.Types.Int
+                   Client.startClient9
+                   (GHC.Types.[] @ GHC.Types.Int)) -}
+51ff92cac869a86f0334cb09f126b4bb
+  startClient9 :: GHC.Types.Int
+  {- Unfolding: (case System.Console.ANSI.Unix.$wsgrToCode
+                        Client.startClient10 of ww { DEFAULT ->
+                 GHC.Types.I# ww }) -}
+fdd0b15825766f6156891ddd8410631f
   yellowCode :: GHC.Base.String
   {- Unfolding: (System.Console.ANSI.Unix.csi
-                   Client.startClient24
+                   Client.startClient7
                    System.Console.ANSI.Unix.setSGRCode1) -}
 vectorised variables:
 vectorised tycons:
