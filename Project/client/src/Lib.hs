@@ -1,39 +1,48 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators   #-}
-module Lib
-    ( startApp
-    ) where
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 
+module Lib where
+
+import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.TH
+import Data.List
+import GHC.Generics
+import Network.HTTP.Client
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
 
-data User = User
-  { userId        :: Int
-  , userFirstName :: String
-  , userLastName  :: String
-  } deriving (Eq, Show)
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TextIO
 
-$(deriveJSON defaultOptions ''User)
+{-
 
-type API = "users" :> Get '[JSON] [User]
+  Copied the API here until I figure out how to import it properly from the file-server project
 
-startApp :: IO ()
-startApp = run 8080 app
+-}
+data FileObj = FileObj { name :: String
+                 , content :: TL.Text
+} deriving (Generic)
 
-app :: Application
-app = serve api server
+instance ToJSON FileObj
+instance FromJSON FileObj
 
-api :: Proxy API
-api = Proxy
+data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
 
-server :: Server API
-server = return users
+instance ToJSON ResponseMessage
+instance FromJSON ResponseMessage
 
-users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
+--TODO: Figure out the proper HTTP verbs and proper response types for each endpoint
+type API = "files" :> Capture "filename" String :> Get '[JSON] FileObj
+      :<|> "upload" :> ReqBody '[JSON] FileObj :> Post '[JSON] ResponseMessage
+      :<|> "delete" :> Capture "file" String :> Get '[JSON] ResponseMessage
+      :<|> "modify" :> ReqBody '[JSON] FileObj :> Post '[JSON] FileObj
+      :<|> "getReadme" :> Get '[JSON] FileObj

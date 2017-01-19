@@ -1,38 +1,50 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators   #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
 module Client
     ( startClient
     ) where
 
+import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.TH
 import Data.Proxy as DP
-import Network.HTTP.Client (newManager, defaultManagerSettings)
+import Data.List
+import GHC.Generics
+import Network.HTTP.Client
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant.API
 import Servant.Client
 import System.Console.ANSI
 import System.IO
+import qualified Data.Text.Lazy as TL
+import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
+import Lib
 
 -- API imported from FileServer.hs in the file-system project
 fsApi :: DP.Proxy API
 fsApi = DP.Proxy
 
 serverUrl :: BaseUrl
-serverUrl = BaseUrl Http "localhost" "8080" ""
+serverUrl = BaseUrl Http "localhost" 8080 ""
 
 -- One function for each endpoint in the FileServer.hs API
-get :: Maybe String -> ClientM File
-upload :: File -> ClientM ResponseMessage
+get :: String -> ClientM FileObj
+upload :: FileObj -> ClientM ResponseMessage
 delete :: String -> ClientM ResponseMessage
-modify :: File -> ClientM File
-getReadme :: ClientM File
+modify :: FileObj -> ClientM FileObj
+getReadme :: ClientM FileObj
 
-(get :<|> upload :<|> delete :<|> modify :<|> getReadme) = client fsApi
+get :<|> upload :<|> delete :<|> modify :<|> getReadme = client fsApi
 
 -- Colour codes from Stephen's sample project
 redCode   = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Red]
@@ -42,9 +54,9 @@ greenCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground
 yellowCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Yellow]
 resetCode = setSGRCode [Reset]
 
-getFile :: String -> ClientM FileObject
-getRequest fPath = do
-  f <- get (Just fPath)
+getFile :: String -> ClientM FileObj
+getFile _ = do
+  f <- get "Test"
   return f
 
 greeting :: IO ()
@@ -56,11 +68,13 @@ parseInput :: String -> [String] -> IO ()
 parseInput "get" (arg:args) = do
   putStrLn $ "Getting file: " ++ arg
   manager <- newManager defaultManagerSettings
-  res <- runClientM (getFile arg) (ClientEnv manager serverUrl)
+  res <- runClientM (get arg) (ClientEnv manager serverUrl)
+  putStrLn $ "Result:" ++ greenCode
   case res of
-    Left err -> putStrLn $ redCode ++ "Error: " ++ (show err)
+    Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right f -> do
-      putStrLn $ show (content f)
+      print (content f)
+      print (name f)
   prompt
 
 parseInput "post" args = do
@@ -89,7 +103,7 @@ parseInput _ _ = do
 -- E.g: get sample/file/path/file.txt
 prompt :: IO ()
 prompt = do
-  putStr ">> "
+  putStr $ resetCode ++ ">> "
   hFlush stdout
   userInput <- getLine
   let commandWords = words userInput

@@ -9,7 +9,6 @@
 {-# LANGUAGE TypeOperators #-}
 
 module FileServer(
-  File(..), ResponseMessage(..), API(..), 
   startFileServer)
   where
 
@@ -42,33 +41,33 @@ import qualified Data.Text.Lazy.IO as TextIO
 
 baseDirectory = "./static-files/"
 
-data File = File { name :: String
+data FileObj = FileObj { name :: String
                  , content :: TL.Text
 } deriving (Generic)
 
-instance ToJSON File
-instance FromJSON File
+instance ToJSON FileObj
+instance FromJSON FileObj
 
 data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
 
 instance ToJSON ResponseMessage
 instance FromJSON ResponseMessage
 
-testFile1 :: File
-testFile1 = File "test1.txt" "This is test file number 1"
+testFile1 :: FileObj
+testFile1 = FileObj "test1.txt" "This is test file number 1"
 
-testFile2 :: File
-testFile2 = File "test2.txt" "The second test file"
+testFile2 :: FileObj
+testFile2 = FileObj "test2.txt" "The second test file"
 
-fileList :: [File]
+fileList :: [FileObj]
 fileList = [testFile1, testFile2]
 
 --TODO: Figure out the proper HTTP verbs and proper response types for each endpoint
-type API = "files" :> Capture "filename" String :> Get '[JSON] File
-      :<|> "upload" :> ReqBody '[JSON] File :> Post '[JSON] ResponseMessage
+type API = "files" :> Capture "filename" String :> Get '[JSON] FileObj
+      :<|> "upload" :> ReqBody '[JSON] FileObj :> Post '[JSON] ResponseMessage
       :<|> "delete" :> Capture "file" String :> Get '[JSON] ResponseMessage
-      :<|> "modify" :> ReqBody '[JSON] File :> Post '[JSON] File
-      :<|> "getReadme" :> Get '[JSON] File
+      :<|> "modify" :> ReqBody '[JSON] FileObj :> Post '[JSON] FileObj
+      :<|> "getReadme" :> Get '[JSON] FileObj
 
 startFileServer :: IO ()
 startFileServer = do 
@@ -84,13 +83,13 @@ server = getFile
     :<|> getReadme
 
   where 
-    getFile :: String -> Handler File
+    getFile :: String -> Handler FileObj
     getFile fname = liftIO $ do
       let fpath = baseDirectory ++ fname
       _content <- TextIO.readFile fpath
-      return $ File {name = fname, content = _content}
+      return $ FileObj {name = fname, content = _content}
 
-    uploadFile :: File -> Handler ResponseMessage
+    uploadFile :: FileObj -> Handler ResponseMessage
     uploadFile nf = liftIO $ do
       let fpath = baseDirectory ++ (name nf)
       TextIO.writeFile fpath (content nf)
@@ -107,21 +106,21 @@ server = getFile
           return $ ResponseMessage {response = (fname ++ " not found on server")}
 
     --TODO: figure out a better way of writing and returning a response
-    modifyFile :: File -> Handler File
+    modifyFile :: FileObj -> Handler FileObj
     modifyFile f = liftIO $ do
       let fpath = baseDirectory ++ (name f)
       fileExists <- doesFileExist fpath
       case fileExists of
         True -> do
           TextIO.writeFile fpath (content f)
-          return $ File {name = (name f), content = (content f)}
+          return $ FileObj {name = (name f), content = (content f)}
         False -> do
-          return $ File {name = "", content = "File not found"}
+          return $ FileObj {name = "", content = "File not found"}
 
-    getReadme :: Handler File
+    getReadme :: Handler FileObj
     getReadme = liftIO $ do 
       contents <- TextIO.readFile "./static-files/test.txt" 
-      return $ File "test.txt" contents
+      return $ FileObj "test.txt" contents
 
 
 fileApi :: Proxy API
