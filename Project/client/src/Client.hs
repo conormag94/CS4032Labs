@@ -28,7 +28,7 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
-import Lib
+--import Lib
 
 -- API imported from FileServer.hs in the file-system project
 fsApi :: DP.Proxy API
