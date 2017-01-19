@@ -24,11 +24,14 @@ import Servant.API
 import Servant.Client
 import System.Console.ANSI
 import System.IO
+import System.Directory
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
 --import Lib
+
+userDirectory = "./user-files/"
 
 -- API imported from FileServer.hs in the file-system project
 fsApi :: DP.Proxy API
@@ -54,16 +57,22 @@ greenCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground
 yellowCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Yellow]
 resetCode = setSGRCode [Reset]
 
-getFile :: String -> ClientM FileObj
-getFile _ = do
-  f <- get "Test"
-  return f
-
 greeting :: IO ()
 greeting = do
   putStrLn $ blueCode ++ "=== Distributed File System Client ==="
-  putStrLn $ yellowCode ++ "Usage: get, post, put, delete, quit" ++ resetCode
+  putStrLn $ yellowCode ++ "Usage: get, post, put, delete, quit, help" ++ resetCode
 
+displayHelp :: IO ()
+displayHelp = do
+  putStrLn "Commands"
+  putStrLn "========"
+  putStrLn "get <filename>    - Get the file '<filename>' from server"
+  putStrLn "post <filename>   - Upload the file '<filename>' to server"
+  putStrLn "put <filename>    - Modify the file '<filename>' on server"
+  putStrLn "delete <filename> - Delete the file '<filename>' from server"
+  putStrLn "quit              - Quit the client"
+
+-- Get and post implemented. The rest is skeleton code for now
 parseInput :: String -> [String] -> IO ()
 parseInput "get" (arg:args) = do
   putStrLn $ "Getting file: " ++ arg
@@ -73,12 +82,24 @@ parseInput "get" (arg:args) = do
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right f -> do
-      print (content f)
+      print (content f)   --TODO: Do something more meaningful with the file than printing it
       print (name f)
   prompt
 
-parseInput "post" args = do
-  putStrLn "Postman pat"
+parseInput "post" (arg:args) = do
+  putStrLn $ "Uploading file: " ++ arg
+  let fpath = (userDirectory ++ arg)
+  fileExists <- doesFileExist fpath
+  case fileExists of
+    True -> do
+      putStrLn "File Exists"
+      fcontent <- TextIO.readFile fpath
+      let fileObj = FileObj arg fcontent
+      manager <- newManager defaultManagerSettings
+      res <- runClientM (upload fileObj) (ClientEnv manager serverUrl)
+      putStrLn $ greenCode ++ "It worked I think" ++ resetCode
+    False -> do
+      putStrLn $ redCode ++ "File does not exist"
   prompt
 
 parseInput "put" args = do
@@ -93,9 +114,13 @@ parseInput "quit" _ = do
   putStrLn "Exiting..."
   return ()
 
-parseInput _ _ = do
-  putStrLn $ redCode ++ "Not a valid command"
-  putStrLn $ yellowCode ++ "Usage: get, post, put, delete" ++ resetCode
+parseInput "help" _ = do
+  displayHelp
+  prompt
+
+parseInput c _ = do
+  putStrLn $ redCode ++ "'" ++ c ++ "'" ++ " not recognised"
+  -- putStrLn $ yellowCode ++ "Usage: get, post, put, delete" ++ resetCode
   prompt
 
 -- Reads a line of input and sends to the parseInput function
@@ -103,7 +128,7 @@ parseInput _ _ = do
 -- E.g: get sample/file/path/file.txt
 prompt :: IO ()
 prompt = do
-  putStr $ resetCode ++ ">> "
+  putStr $ blueCode ++ ">> " ++ resetCode
   hFlush stdout
   userInput <- getLine
   let commandWords = words userInput
