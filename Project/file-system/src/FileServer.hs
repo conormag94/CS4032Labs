@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeOperators #-}
 
 module FileServer(
-  startFileServer)
+  API, FileObj, ResponseMessage, startFileServer)
   where
 
 import Prelude ()
