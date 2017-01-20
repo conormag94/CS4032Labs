@@ -48,10 +48,16 @@ data FileObj = FileObj { name :: String
 instance ToJSON FileObj
 instance FromJSON FileObj
 
+instance Show FileObj where
+  show (FileObj n c) = ("{ " ++ (show n) ++ "\n" ++ (show c) ++ " }") 
+
 data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
 
 instance ToJSON ResponseMessage
 instance FromJSON ResponseMessage
+
+instance Show ResponseMessage where
+  show (ResponseMessage r) = show r
 
 testFile1 :: FileObj
 testFile1 = FileObj "test1.txt" "This is test file number 1"
