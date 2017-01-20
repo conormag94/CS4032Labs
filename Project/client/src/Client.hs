@@ -98,6 +98,7 @@ parseInput "post" (arg:args) = do
       manager <- newManager defaultManagerSettings
       res <- runClientM (upload fileObj) (ClientEnv manager serverUrl)
       putStrLn $ greenCode ++ "It worked I think" ++ resetCode
+      putStrLn $ (show res)
     False -> do
       putStrLn $ redCode ++ "File does not exist"
   prompt
