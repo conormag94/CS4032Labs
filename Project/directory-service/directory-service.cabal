@@ -1,13 +1,13 @@
 name:                directory-service
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            Directory Server component for CS4032 Distributed File System project
 description:         Please see README.md
-homepage:            https://github.com/githubuser/directory-service#readme
+homepage:            https://github.com/conormag94/CS4032Labs/tree/master/Project/directory-service#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+author:              Conor Maguire
+maintainer:          conormag94@gmail.com
+copyright:           2017 Conor Maguire
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
@@ -42,4 +42,4 @@ test-suite directory-service-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/directory-service
+  location: https://github.com/conormag94/CS4032Labs

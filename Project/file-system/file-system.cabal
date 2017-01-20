@@ -1,13 +1,13 @@
 name:                file-system
 version:             0.1.0.0
-synopsis:            Distributed file server project for CS4032
+synopsis:            File Server component for CS4032 Distributed File System project
 description:         Please see README.md
-homepage:            https://github.com/conormag94/CS4032Labs/blob/master/Project/README.md
+homepage:            https://github.com/conormag94/CS4032Labs/tree/master/Project/file-system#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Conor Maguire
 maintainer:          conormag94@gmail.com
-copyright:           2016 Conor Maguire
+copyright:           2017 Conor Maguire
 category:            Web
 build-type:          Simple
 -- extra-source-files:
