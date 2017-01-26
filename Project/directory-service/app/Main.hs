@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import DirectoryService
 
 main :: IO ()
 main = startApp

@@ -73,6 +73,7 @@ type API = "files" :> Capture "filename" String :> Get '[JSON] FileObj
       :<|> "upload" :> ReqBody '[JSON] FileObj :> Post '[JSON] ResponseMessage
       :<|> "delete" :> Capture "file" String :> Get '[JSON] ResponseMessage
       :<|> "modify" :> ReqBody '[JSON] FileObj :> Post '[JSON] FileObj
+      :<|> "list" :> Get '[JSON] [FilePath]
       :<|> "getReadme" :> Get '[JSON] FileObj
 
 startFileServer :: IO ()
@@ -86,6 +87,7 @@ server = getFile
     :<|> uploadFile
     :<|> deleteFile
     :<|> modifyFile
+    :<|> listFiles
     :<|> getReadme
 
   where 
@@ -122,6 +124,12 @@ server = getFile
           return $ FileObj {name = (name f), content = (content f)}
         False -> do
           return $ FileObj {name = "", content = "File not found"}
+
+    listFiles :: Handler [FilePath]
+    listFiles = liftIO $ do
+      file_list <- listDirectory "static-files"
+      return $ file_list
+
 
     getReadme :: Handler FileObj
     getReadme = liftIO $ do 
