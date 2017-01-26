@@ -39,7 +39,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/conormag94/CS4032Labs
-    commit: 40340469d69261cd00dc2872d0dabb4ac3ab05a4
+    commit: cfd8f7f825825f98f505da96795bf4da3c32920c
   subdirs:
   - 'Project/file-system'
 # Dependency packages to be pulled from upstream that are not in the resolver

@@ -59,15 +59,6 @@ instance FromJSON ResponseMessage
 instance Show ResponseMessage where
   show (ResponseMessage r) = show r
 
-testFile1 :: FileObj
-testFile1 = FileObj "test1.txt" "This is test file number 1"
-
-testFile2 :: FileObj
-testFile2 = FileObj "test2.txt" "The second test file"
-
-fileList :: [FileObj]
-fileList = [testFile1, testFile2]
-
 --TODO: Figure out the proper HTTP verbs and proper response types for each endpoint
 type API = "files" :> Capture "filename" String :> Get '[JSON] FileObj
       :<|> "upload" :> ReqBody '[JSON] FileObj :> Post '[JSON] ResponseMessage

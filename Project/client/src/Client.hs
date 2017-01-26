@@ -45,9 +45,10 @@ get :: String -> ClientM FileObj
 upload :: FileObj -> ClientM ResponseMessage
 delete :: String -> ClientM ResponseMessage
 modify :: FileObj -> ClientM FileObj
+list :: ClientM [FilePath]
 getReadme :: ClientM FileObj
 
-get :<|> upload :<|> delete :<|> modify :<|> getReadme = client fsApi
+get :<|> upload :<|> delete :<|> modify :<|> list :<|> getReadme = client fsApi
 
 -- Colour codes from Stephen's sample project
 redCode   = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Red]
