@@ -21,6 +21,7 @@ library
                      , aeson
                      , ansi-terminal
                      , directory
+                     , directory-service
                      , file-system
                      , http-client
                      , servant

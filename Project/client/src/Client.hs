@@ -62,7 +62,7 @@ resetCode = setSGRCode [Reset]
 greeting :: IO ()
 greeting = do
   putStrLn $ blueCode ++ "=== Distributed File System Client ==="
-  putStrLn $ yellowCode ++ "Usage: get, post, put, delete, quit, help" ++ resetCode
+  putStrLn $ yellowCode ++ "Usage: get, post, put, delete, list, quit, help" ++ resetCode
 
 displayHelp :: IO ()
 displayHelp = do
@@ -72,6 +72,7 @@ displayHelp = do
   putStrLn "post <filename>   - Upload the file '<filename>' to server"
   putStrLn "put <filename>    - Modify the file '<filename>' on server"
   putStrLn "delete <filename> - Delete the file '<filename>' from server"
+  putStrLn "list              - List all files"
   putStrLn "quit              - Quit the client"
 
 -- Get and post implemented. The rest is skeleton code for now
@@ -112,6 +113,15 @@ parseInput "put" args = do
 
 parseInput "delete" args = do
   putStrLn "You want to delete something"
+  prompt
+
+parseInput "list" _ = do
+  manager <- newManager defaultManagerSettings
+  res <- runClientM (list) (ClientEnv manager serverUrl)
+  case res of
+    Left err -> putStrLn $ redCode ++ "Error: " ++ show err
+    Right files -> do
+      putStr $ unlines files
   prompt
 
 parseInput "quit" _ = do
