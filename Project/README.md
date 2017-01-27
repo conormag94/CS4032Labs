@@ -22,11 +22,15 @@ data FileObj = FileObj {
 This is responsible for storing files and providing an API for clients to access those files. It has endpoints for downloading, uploading, modifying, deleting and listing files.
 
 ### File Server Usage
-`stack setup`
-
-`stack build`
-
-`stack exec file-system-exe`
+```
+stack setup
+```
+```
+stack build
+```
+```
+stack exec file-system-exe
+```
 
 This will run on `localhost:8080`.
 
@@ -40,11 +44,15 @@ This will run on `localhost:8080`.
 User client for easier use of the File Server and Directory Service. Prompts the user for input and then sends their request to the appropriate service, displaying the result. It also stores the result on the user's file system if necessary.
 
 ### Client Usage
-`stack setup`
-
-`stack build`
-
-`stack exec client-exe`
+```
+stack setup
+```
+```
+stack build
+```
+```
+stack exec client-exe
+```
 
 All commands are displayed when the client first starts. Enter `help` in the prompt to view them again.
 
@@ -52,11 +60,15 @@ All commands are displayed when the client first starts. Enter `help` in the pro
 Responsible for finding which file server has a particular file and also for listing all the files in the distributed file system. At the moment there is only one file server running so the Directory Service outputs some dummy data for the purpose of getting all the components talking to each other properly.
 
 ### Directory Service Usage
-`stack setup`
-
-`stack build`
-
-`stack exec directory-service-exe`
+```
+stack setup
+```
+```
+stack build
+```
+```
+stack exec directory-service-exe
+```
 
 This will run on `localhost:8081`
 
