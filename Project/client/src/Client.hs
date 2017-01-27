@@ -62,32 +62,37 @@ resetCode = setSGRCode [Reset]
 greeting :: IO ()
 greeting = do
   putStrLn $ blueCode ++ "=== Distributed File System Client ==="
-  putStrLn $ yellowCode ++ "Usage: get, post, put, delete, list, quit, help" ++ resetCode
+  putStrLn $ yellowCode ++ "Usage: open, post, put, delete, list, quit, help" ++ resetCode
 
 displayHelp :: IO ()
 displayHelp = do
   putStrLn "Commands"
   putStrLn "========"
-  putStrLn "get <filename>    - Get the file '<filename>' from server"
+  putStrLn "open <filename>   - Open the file '<filename>' from server and store cached copy"
   putStrLn "post <filename>   - Upload the file '<filename>' to server"
+  putStrLn "close <filename>  - Upload the file '<filename>' to server and delete cached copy"
   putStrLn "put <filename>    - Modify the file '<filename>' on server"
   putStrLn "delete <filename> - Delete the file '<filename>' from server"
   putStrLn "list              - List all files"
   putStrLn "quit              - Quit the client"
 
--- Get and post implemented. The rest is skeleton code for now
+
 parseInput :: String -> [String] -> IO ()
-parseInput "get" (arg:args) = do
-  putStrLn $ "Getting file: " ++ arg
+parseInput "open" (arg:args) = do
+  putStrLn $ "Opening file: " ++ arg
   manager <- newManager defaultManagerSettings
   res <- runClientM (get arg) (ClientEnv manager serverUrl)
-  putStrLn $ "Result:" ++ greenCode
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right f -> do
       let fpath = userDirectory ++ (name f)
-      TextIO.writeFile fpath (content f)
-      putStrLn $ (name f) ++ " downloaded to " ++ userDirectory
+      fileExists <- doesFileExist fpath
+      case fileExists of
+        True -> do
+          putStrLn $ yellowCode ++ "Cached version of file already present"
+        False -> do
+          TextIO.writeFile fpath (content f)
+          putStrLn $ greenCode ++ (name f) ++ " downloaded to " ++ userDirectory
   prompt
 
 parseInput "post" (arg:args) = do
@@ -107,6 +112,25 @@ parseInput "post" (arg:args) = do
       putStrLn $ redCode ++ "File does not exist"
   prompt
 
+parseInput "close" (file:_) = do
+  let fpath = (userDirectory ++ file)
+  fileExists <- doesFileExist fpath
+  case fileExists of
+    True -> do 
+      fcontent <- TextIO.readFile fpath
+      let fileObj = FileObj file fcontent
+      manager <- newManager defaultManagerSettings
+      res <- runClientM (upload fileObj) (ClientEnv manager serverUrl)
+      case res of 
+        Left err -> do 
+          putStrLn $ redCode ++ "Unable to upload file"
+          putStrLn "The server's copy of the file has been updated since you opened it"
+          putStrLn $ yellowCode ++ "You must download the new copy"
+        Right resp -> do
+          removeFile fpath
+          putStrLn $ greenCode ++ fpath ++ " uploaded and uncached"
+  prompt
+
 parseInput "put" args = do
   putStrLn "Put it there"
   prompt
@@ -115,12 +139,19 @@ parseInput "delete" args = do
   putStrLn "You want to delete something"
   prompt
 
-parseInput "list" _ = do
+parseInput "list" ("cached":_) = do
+  file_list <- listDirectory "user-files"
+  putStrLn $ yellowCode ++ "Cached files:" ++ resetCode
+  putStr $ unlines file_list
+  prompt
+
+parseInput "list" ("all":_) = do
   manager <- newManager defaultManagerSettings
   res <- runClientM (list) (ClientEnv manager serverUrl)
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right files -> do
+      putStrLn $ yellowCode ++ "All files:" ++ resetCode
       putStr $ unlines files
   prompt
 
