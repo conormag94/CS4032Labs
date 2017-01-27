@@ -6,6 +6,7 @@ These projects talk to each other by importing their APIs in their `stack.yaml` 
 ## Features implemented
  - File Server
  - Client
+ - Caching (in Client)
  - Directory Service
  
 ## FileObj
@@ -56,6 +57,11 @@ stack exec client-exe
 
 All commands are displayed when the client first starts. Enter `help` in the prompt to view them again.
 
+## Caching
+The caching is implemented in the Client component (`client/src/Client.hs`).
+
+When the Client opens a file from the server, it is downloaded and stored on the client's file system. All reads and writes are done to this cached local copy. When the Client closes the file, this updated file is uploaded to the server and the client's cached copy is deleted.
+
 ## Directory Service
 Responsible for finding which file server has a particular file and also for listing all the files in the distributed file system. At the moment there is only one file server running so the Directory Service outputs some dummy data for the purpose of getting all the components talking to each other properly.
 
@@ -71,5 +77,3 @@ stack exec directory-service-exe
 ```
 
 This will run on `localhost:8081`
-
-  
