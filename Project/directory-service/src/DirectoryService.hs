@@ -8,7 +8,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module DirectoryService (startApp) where
+module DirectoryService (DsAPI(..), startApp) where
 
 import Prelude ()
 import Prelude.Compat

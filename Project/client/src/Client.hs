@@ -29,6 +29,7 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
+import DirectoryService
 --import Lib
 
 userDirectory = "./user-files/"
@@ -83,8 +84,9 @@ parseInput "get" (arg:args) = do
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right f -> do
-      print (content f)   --TODO: Do something more meaningful with the file than printing it
-      print (name f)
+      let fpath = userDirectory ++ (name f)
+      TextIO.writeFile fpath (content f)
+      putStrLn $ (name f) ++ " downloaded to " ++ userDirectory
   prompt
 
 parseInput "post" (arg:args) = do

@@ -42,6 +42,7 @@ packages:
     commit: cfd8f7f825825f98f505da96795bf4da3c32920c
   subdirs:
   - 'Project/file-system'
+  - 'Project/directory-service'
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
