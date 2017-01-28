@@ -38,6 +38,7 @@ userDirectory = "./user-files/"
 fsApi :: DP.Proxy API
 fsApi = DP.Proxy
 
+-- Only looks at one file server for now
 serverUrl :: BaseUrl
 serverUrl = BaseUrl Http "localhost" 8080 ""
 
@@ -69,11 +70,12 @@ displayHelp = do
   putStrLn "Commands"
   putStrLn "========"
   putStrLn "open <filename>   - Open the file '<filename>' from server and store cached copy"
+  putStrLn "close <filename>  - Upload your changes to the file '<filename>' to server and delete cached copy"
   putStrLn "post <filename>   - Upload the file '<filename>' to server"
-  putStrLn "close <filename>  - Upload the file '<filename>' to server and delete cached copy"
   putStrLn "put <filename>    - Modify the file '<filename>' on server"
   putStrLn "delete <filename> - Delete the file '<filename>' from server"
-  putStrLn "list              - List all files"
+  putStrLn "list all          - List all remote files"
+  putStrLn "list cached       - List all local cached files"
   putStrLn "quit              - Quit the client"
 
 

@@ -35,6 +35,30 @@ import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
 
+{-
+     FileServer API - This module queries this API
+-}
+
+fileServerAPI :: DP.Proxy API
+fileServerAPI = DP.Proxy
+
+fileServerUrl :: BaseUrl
+fileServerUrl = BaseUrl Http "localhost" 8080 ""
+
+-- One function for each endpoint in the FileServer.hs API
+getFile :: String -> ClientM FileObj
+uploadFile :: FileObj -> ClientM ResponseMessage
+deleteFile :: String -> ClientM ResponseMessage
+modifyFile :: FileObj -> ClientM FileObj
+listFiles :: ClientM [FilePath]
+getReadmeFile :: ClientM FileObj
+
+getFile :<|> uploadFile :<|> deleteFile :<|> modifyFile :<|> listFiles :<|> getReadmeFile = client fileServerAPI
+
+{-
+     DirectoryService API - This module serves this API
+-}
+
 type DsAPI = "findFile" :> Capture "filename" String :> Get '[JSON] ResponseMessage
         :<|> "listAll" :> Get '[JSON] [FilePath]
 
@@ -55,7 +79,18 @@ directoryServer = findFile
 
     listAll :: Handler [FilePath]
     listAll = liftIO $ do
-      return $ ["hello.txt", "test.txt"]
+      manager <- newManager defaultManagerSettings
+      res <- runClientM (listFiles) (ClientEnv manager fileServerUrl)
+      case res of
+        Left err -> do 
+          print err
+          return []
+        Right files -> do
+          return files
+
+    -- listAll :: Handler [FilePath]
+    -- listAll = liftIO $ do
+    --   return $ ["hello.txt", "test.txt"]
 
 dirApi :: DP.Proxy DsAPI
 dirApi = DP.Proxy
