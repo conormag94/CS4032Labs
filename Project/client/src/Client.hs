@@ -16,6 +16,7 @@ import Data.Aeson
 import Data.Aeson.TH
 import Data.Proxy as DP
 import Data.List
+import Data.List.Split
 import GHC.Generics
 import Network.HTTP.Client
 import Network.Wai
@@ -75,10 +76,19 @@ dirServerUrl :: BaseUrl
 dirServerUrl = BaseUrl Http "localhost" 8081 ""
 
 -- One function for each endpoint in the DirectoryService.hs API
-findFile :: String -> ClientM ResponseMessage
+whereFile :: String -> ClientM ResponseMessage
 listFiles :: ClientM [FilePath]
 
-findFile :<|> listFiles = client dsApi
+whereFile :<|> listFiles = client dsApi
+
+
+extractFileServer :: ResponseMessage -> BaseUrl
+extractFileServer resp = 
+  let server = splitOn ":" (response resp)
+      host = (server !! 0)
+      port = (server !! 1)
+  in  BaseUrl Http host (read port :: Int) ""
+
 
 greeting :: IO ()
 greeting = do
@@ -104,19 +114,26 @@ displayHelp = do
 parseInput :: String -> [String] -> IO ()
 parseInput "open" (arg:args) = do
   putStrLn $ "Opening file: " ++ arg
+  -- First, ask directory server where the file is
   manager <- newManager defaultManagerSettings
-  res <- runClientM (get arg) (ClientEnv manager fileServerUrl)
-  case res of
+  loc <- runClientM (whereFile arg) (ClientEnv manager dirServerUrl)
+  case loc of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
-    Right f -> do
-      let fpath = userDirectory ++ (name f)
-      fileExists <- doesFileExist fpath
-      case fileExists of
-        True -> do
-          putStrLn $ yellowCode ++ "Cached version of file already present"
-        False -> do
-          TextIO.writeFile fpath (content f)
-          putStrLn $ greenCode ++ (name f) ++ " downloaded to " ++ userDirectory
+    Right response -> do
+      --Turn server:port response into a BaseUrl to get the file from
+      let fServer = extractFileServer response
+      res <- runClientM (get arg) (ClientEnv manager fServer)
+      case res of
+        Left err -> putStrLn $ redCode ++ "Error: " ++ show err
+        Right f -> do
+          let fpath = userDirectory ++ (name f)
+          fileExists <- doesFileExist fpath
+          case fileExists of
+            True -> do
+              putStrLn $ yellowCode ++ "Cached version of file already present"
+            False -> do
+              TextIO.writeFile fpath (content f)
+              putStrLn $ greenCode ++ (name f) ++ " downloaded to " ++ userDirectory
   prompt
 
 parseInput "close" (file:_) = do
@@ -156,7 +173,7 @@ parseInput "write" (file:newContent) = do
   fileExists <- doesFileExist fpath
   case fileExists of
     True -> do
-      TextIO.writeFile fpath (TL.pack (intercalate " " newContent))
+      TextIO.writeFile fpath (TL.pack $ unwords newContent)
       putStrLn $ greenCode ++ "File " ++ file ++ " written"
     False -> do
       putStrLn $ redCode ++ "File " ++ fpath ++ " not found"
