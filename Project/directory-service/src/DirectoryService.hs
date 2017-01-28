@@ -35,9 +35,9 @@ import qualified Data.Text.Lazy.IO as TextIO
 
 import FileServer
 
-{-
+{-------------------------------------------------
      FileServer API - This module queries this API
--}
+-}------------------------------------------------
 
 fileServerAPI :: DP.Proxy API
 fileServerAPI = DP.Proxy
@@ -55,9 +55,9 @@ getReadmeFile :: ClientM FileObj
 
 getFile :<|> uploadFile :<|> deleteFile :<|> modifyFile :<|> listFiles :<|> getReadmeFile = client fileServerAPI
 
-{-
+{------------------------------------------------------
      DirectoryService API - This module serves this API
--}
+-}-----------------------------------------------------
 
 type DsAPI = "findFile" :> Capture "filename" String :> Get '[JSON] ResponseMessage
         :<|> "listAll" :> Get '[JSON] [FilePath]
@@ -87,10 +87,6 @@ directoryServer = findFile
           return []
         Right files -> do
           return files
-
-    -- listAll :: Handler [FilePath]
-    -- listAll = liftIO $ do
-    --   return $ ["hello.txt", "test.txt"]
 
 dirApi :: DP.Proxy DsAPI
 dirApi = DP.Proxy

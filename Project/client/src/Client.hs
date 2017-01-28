@@ -34,13 +34,25 @@ import DirectoryService
 
 userDirectory = "./user-files/"
 
+-- Colour codes from Stephen's sample project
+redCode   = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Red]
+whiteCode = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid White]
+blueCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Blue]
+greenCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Green]
+yellowCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Yellow]
+resetCode = setSGRCode [Reset]
+
+{-----------------------------------------------
+    FileServer API - Queried by this module
+-}----------------------------------------------
+
 -- API imported from FileServer.hs in the file-system project
 fsApi :: DP.Proxy API
 fsApi = DP.Proxy
 
 -- Only looks at one file server for now
-serverUrl :: BaseUrl
-serverUrl = BaseUrl Http "localhost" 8080 ""
+fileServerUrl :: BaseUrl
+fileServerUrl = BaseUrl Http "localhost" 8080 ""
 
 -- One function for each endpoint in the FileServer.hs API
 get :: String -> ClientM FileObj
@@ -52,38 +64,48 @@ getReadme :: ClientM FileObj
 
 get :<|> upload :<|> delete :<|> modify :<|> list :<|> getReadme = client fsApi
 
--- Colour codes from Stephen's sample project
-redCode   = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Red]
-whiteCode = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid White]
-blueCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Blue]
-greenCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Green]
-yellowCode  = setSGRCode [SetConsoleIntensity BoldIntensity , SetColor Foreground Vivid Yellow]
-resetCode = setSGRCode [Reset]
+{-----------------------------------------------
+    DirectoryServer API - Queried by this module
+-}----------------------------------------------
+
+dsApi :: DP.Proxy DsAPI
+dsApi = DP.Proxy
+
+dirServerUrl :: BaseUrl
+dirServerUrl = BaseUrl Http "localhost" 8081 ""
+
+-- One function for each endpoint in the DirectoryService.hs API
+findFile :: String -> ClientM ResponseMessage
+listFiles :: ClientM [FilePath]
+
+findFile :<|> listFiles = client dsApi
 
 greeting :: IO ()
 greeting = do
   putStrLn $ blueCode ++ "=== Distributed File System Client ==="
-  putStrLn $ yellowCode ++ "Usage: open, post, put, delete, list, quit, help" ++ resetCode
+  putStrLn $ yellowCode ++ "Usage: open, upload, put, delete, list, quit, help" ++ resetCode
 
 displayHelp :: IO ()
 displayHelp = do
   putStrLn "Commands"
   putStrLn "========"
-  putStrLn "open <filename>   - Open the file '<filename>' from server and store cached copy"
-  putStrLn "close <filename>  - Upload your changes to the file '<filename>' to server and delete cached copy"
-  putStrLn "post <filename>   - Upload the file '<filename>' to server"
-  putStrLn "put <filename>    - Modify the file '<filename>' on server"
-  putStrLn "delete <filename> - Delete the file '<filename>' from server"
-  putStrLn "list all          - List all remote files"
-  putStrLn "list cached       - List all local cached files"
-  putStrLn "quit              - Quit the client"
+  putStrLn "open <file>          - Open the file '<file>' from server and store cached copy"
+  putStrLn "close <file>         - Upload your changes to the file '<file>' to server and delete cached copy"
+  putStrLn "read <file>          - Read the contents of the locally cached version of <file>"
+  putStrLn "write <file> [data]  - Write <data> to the locally cached version of <file>"
+  putStrLn "list all             - List all remote files"
+  putStrLn "list cached          - List all local cached files"
+  putStrLn "upload <file>        - Upload the file '<file>' to server"
+  putStrLn "put <file>           - Modify the file '<file>' on server"
+  putStrLn "delete <file>        - Delete the file '<file>' from server"
+  putStrLn "quit                 - Quit the client"
 
 
 parseInput :: String -> [String] -> IO ()
 parseInput "open" (arg:args) = do
   putStrLn $ "Opening file: " ++ arg
   manager <- newManager defaultManagerSettings
-  res <- runClientM (get arg) (ClientEnv manager serverUrl)
+  res <- runClientM (get arg) (ClientEnv manager fileServerUrl)
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right f -> do
@@ -97,7 +119,51 @@ parseInput "open" (arg:args) = do
           putStrLn $ greenCode ++ (name f) ++ " downloaded to " ++ userDirectory
   prompt
 
-parseInput "post" (arg:args) = do
+parseInput "close" (file:_) = do
+  let fpath = (userDirectory ++ file)
+  fileExists <- doesFileExist fpath
+  case fileExists of
+    True -> do 
+      fcontent <- TextIO.readFile fpath
+      let fileObj = FileObj file fcontent
+      manager <- newManager defaultManagerSettings
+      res <- runClientM (upload fileObj) (ClientEnv manager fileServerUrl)
+      case res of 
+        Left err -> do 
+          putStrLn $ redCode ++ "Unable to upload file"
+          putStrLn "Perhaps the server's copy of the file has been updated since you opened it"
+          putStrLn $ yellowCode ++ "You must download the new copy"
+        Right resp -> do
+          removeFile fpath
+          putStrLn $ greenCode ++ fpath ++ " uploaded and uncached"
+  prompt
+
+parseInput "read" (file:_) = do
+  let fpath = (userDirectory ++ file)
+  fileExists <- doesFileExist fpath
+  case fileExists of
+    True -> do
+      fcontent <- TextIO.readFile fpath
+      putStrLn $ yellowCode ++ "File " ++ file ++ ": " ++ resetCode
+      putStrLn (show fcontent)
+    False -> do
+      putStrLn $ redCode ++ "File " ++ fpath ++ " not found"
+      putStrLn $ yellowCode ++ "Perhaps you need to open it from the file server?"
+  prompt
+
+parseInput "write" (file:newContent) = do
+  let fpath = (userDirectory ++ file)
+  fileExists <- doesFileExist fpath
+  case fileExists of
+    True -> do
+      TextIO.writeFile fpath (TL.pack (intercalate " " newContent))
+      putStrLn $ greenCode ++ "File " ++ file ++ " written"
+    False -> do
+      putStrLn $ redCode ++ "File " ++ fpath ++ " not found"
+      putStrLn $ yellowCode ++ "Perhaps you need to open it from the file server?"
+  prompt
+
+parseInput "upload" (arg:args) = do
   putStrLn $ "Uploading file: " ++ arg
   let fpath = (userDirectory ++ arg)
   fileExists <- doesFileExist fpath
@@ -107,34 +173,15 @@ parseInput "post" (arg:args) = do
       fcontent <- TextIO.readFile fpath
       let fileObj = FileObj arg fcontent
       manager <- newManager defaultManagerSettings
-      res <- runClientM (upload fileObj) (ClientEnv manager serverUrl)
+      res <- runClientM (upload fileObj) (ClientEnv manager fileServerUrl)
       putStrLn $ greenCode ++ "It worked I think" ++ resetCode
       putStrLn $ (show res)
     False -> do
       putStrLn $ redCode ++ "File does not exist"
   prompt
 
-parseInput "close" (file:_) = do
-  let fpath = (userDirectory ++ file)
-  fileExists <- doesFileExist fpath
-  case fileExists of
-    True -> do 
-      fcontent <- TextIO.readFile fpath
-      let fileObj = FileObj file fcontent
-      manager <- newManager defaultManagerSettings
-      res <- runClientM (upload fileObj) (ClientEnv manager serverUrl)
-      case res of 
-        Left err -> do 
-          putStrLn $ redCode ++ "Unable to upload file"
-          putStrLn "The server's copy of the file has been updated since you opened it"
-          putStrLn $ yellowCode ++ "You must download the new copy"
-        Right resp -> do
-          removeFile fpath
-          putStrLn $ greenCode ++ fpath ++ " uploaded and uncached"
-  prompt
-
 parseInput "put" args = do
-  putStrLn "Put it there"
+  putStrLn "You want to modify a file"
   prompt
 
 parseInput "delete" args = do
@@ -149,7 +196,7 @@ parseInput "list" ("cached":_) = do
 
 parseInput "list" ("all":_) = do
   manager <- newManager defaultManagerSettings
-  res <- runClientM (list) (ClientEnv manager serverUrl)
+  res <- runClientM (listFiles) (ClientEnv manager dirServerUrl)
   case res of
     Left err -> putStrLn $ redCode ++ "Error: " ++ show err
     Right files -> do
@@ -167,7 +214,6 @@ parseInput "help" _ = do
 
 parseInput c _ = do
   putStrLn $ redCode ++ "'" ++ c ++ "'" ++ " not recognised"
-  -- putStrLn $ yellowCode ++ "Usage: get, post, put, delete" ++ resetCode
   prompt
 
 -- Reads a line of input and sends to the parseInput function

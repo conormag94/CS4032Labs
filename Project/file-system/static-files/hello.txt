@@ -1,1 +1,1 @@
-This is the new hello
+This edit was made by the client's write function
