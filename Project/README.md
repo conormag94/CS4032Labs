@@ -80,6 +80,12 @@ stack exec directory-service-exe
 This will run on `localhost:8081`
 
 ## Lock Service (in progress)
+#### What I have so far:
+- Run a mongoDB database called 'locks'
+- Run the lock service
+- Make a GET request using cURL to localhost:8082/locktest
+- The lock server inserts a test document into the 'locks' database that is running and returns its ID.
+
 #### General Approach:
 My approach is for the lock server to keep a database of `FileLock` data types. 
 ```haskell
