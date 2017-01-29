@@ -48,13 +48,10 @@ data FileLock = FileLock {
 instance ToJSON FileLock
 instance FromJSON FileLock
 
-type LockAPI = "locktest" :> Get '[JSON] ResponseMessage
-          :<|> "lockFile" :> ReqBody '[JSON] FileLock :> Post '[JSON] ResponseMessage
+type LockAPI = "lockFile" :> ReqBody '[JSON] FileLock :> Post '[JSON] ResponseMessage
           :<|> "unlockFile" :> ReqBody '[JSON] FileLock :> Delete '[JSON] ResponseMessage
           :<|> "checkLock" :> ReqBody '[JSON] FileLock :> Get '[JSON] ResponseMessage
 
-insertTest :: Document
-insertTest = ["name" =: ("insertTest.txt" :: String), "data" =: ("It worked" :: String)]
 
 lockToDoc :: FileLock -> Document
 lockToDoc (FileLock {fileName = name, fileServer = server, owner = o}) = 
@@ -78,17 +75,11 @@ startApp = do
   run 8082 app
 
 lockServer :: Server LockAPI
-lockServer = locktest --TODO: Remove
-        :<|> lockFile
+lockServer = lockFile
         :<|> unlockFile
         :<|> checkLock
 
   where
-    locktest :: Handler ResponseMessage
-    locktest = liftIO $ do
-      insertId <- withMongoDbConnection $ insert "locks" insertTest
-      return $ ResponseMessage {response = "ID: " ++ (show insertId)}
-
 
     lockFile :: FileLock -> Handler ResponseMessage
     lockFile fl = liftIO $ do
@@ -150,6 +141,11 @@ lockApi = DP.Proxy
 
 app :: Application
 app = serve lockApi lockServer
+
+
+{-------------------------------------------------
+    MongoDB helper functions (from Use-Haskell)
+-}------------------------------------------------
 
 withMongoDbConnection :: Action IO a -> IO a
 withMongoDbConnection act  = do
