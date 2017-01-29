@@ -43,9 +43,15 @@ data FileLock = FileLock {
     fileName :: String
   , fileServer :: String
   , owner :: String
-} deriving (Generic)
+} deriving (Generic, Show, Read)
+
+instance ToJSON FileLock
+instance FromJSON FileLock
 
 type LockAPI = "locktest" :> Get '[JSON] ResponseMessage
+          :<|> "lockFile" :> ReqBody '[JSON] FileLock :> Post '[JSON] ResponseMessage
+          :<|> "unlockFile" :> ReqBody '[JSON] FileLock :> Delete '[JSON] ResponseMessage
+          :<|> "checkLock" :> ReqBody '[JSON] FileLock :> Get '[JSON] ResponseMessage
 
 insertTest :: Document
 insertTest = ["name" =: ("insertTest.txt" :: String), "data" =: ("It worked" :: String)]
@@ -57,12 +63,29 @@ startApp = do
 
 lockServer :: Server LockAPI
 lockServer = locktest
+        :<|> lockFile
+        :<|> unlockFile
+        :<|> checkLock
 
   where
     locktest :: Handler ResponseMessage
     locktest = liftIO $ do
       insertId <- withMongoDbConnection $ insert "locks" insertTest
       return $ ResponseMessage {response = "ID: " ++ (show insertId)}
+
+    lockFile :: FileLock -> Handler ResponseMessage
+    lockFile fl = liftIO $ do
+      return $ ResponseMessage $ "TODO: Lock " ++ (fileName fl)
+
+    unlockFile :: FileLock -> Handler ResponseMessage
+    unlockFile fl = liftIO $ do
+      return $ ResponseMessage (show fl)
+
+    checkLock :: FileLock -> Handler ResponseMessage
+    checkLock fl = liftIO $ do
+      return $ ResponseMessage $ "TODO: Check lock status of " ++ (fileName fl)
+
+
 
 
 lockApi :: DP.Proxy LockAPI
