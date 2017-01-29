@@ -36,7 +36,6 @@ import Servant.Server
 import System.Directory
 import Servant.Client
 import qualified Data.Aeson.Parser
-import qualified Text.Blaze.Html
 import Data.Proxy as DP
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
@@ -86,9 +85,9 @@ lockServiceUrl :: BaseUrl
 lockServiceUrl = BaseUrl Http "localhost" 8082 ""
 
 -- One function for each endpoint in the FileServer.hs API
-lockF :: FileLock -> ClientM ResponseMessage
-unlockF :: FileLock -> ClientM ResponseMessage
-checkF :: FileLock -> ClientM ResponseMessage
+lockF :: FileLock -> ClientM LockResult
+unlockF :: FileLock -> ClientM LockResult
+checkF :: FileLock -> ClientM LockResult
 
 lockF :<|> unlockF :<|> checkF = client lockServiceAPI
 
@@ -157,8 +156,8 @@ server = getFile
       return $ FileObj "test.txt" contents
 
 
-fileApi :: Proxy API
-fileApi = Proxy
+fileApi :: DP.Proxy API
+fileApi = DP.Proxy
 
 app :: Application
 app = serve fileApi server

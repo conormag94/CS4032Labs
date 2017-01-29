@@ -9,7 +9,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module LockService (LockAPI(..), FileLock(..), startApp) where
+module LockService (LockAPI(..), FileLock(..), LockResult(..), startApp) where
 
 import Prelude ()
 import Prelude.Compat
@@ -37,13 +37,13 @@ import qualified Data.Text as DT
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
-data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
+data LockResult = LockResult { result :: String } deriving(Generic)
 
-instance ToJSON ResponseMessage
-instance FromJSON ResponseMessage
+instance ToJSON LockResult
+instance FromJSON LockResult
 
-instance Show ResponseMessage where
-  show (ResponseMessage r) = show r
+instance Show LockResult where
+  show (LockResult r) = show r
 
 data FileLock = FileLock {
     fileName :: String
@@ -54,9 +54,9 @@ data FileLock = FileLock {
 instance ToJSON FileLock
 instance FromJSON FileLock
 
-type LockAPI = "lockFile" :> ReqBody '[JSON] FileLock :> Post '[JSON] ResponseMessage
-          :<|> "unlockFile" :> ReqBody '[JSON] FileLock :> Delete '[JSON] ResponseMessage
-          :<|> "checkLock" :> ReqBody '[JSON] FileLock :> Get '[JSON] ResponseMessage
+type LockAPI = "lockFile" :> ReqBody '[JSON] FileLock :> Post '[JSON] LockResult
+          :<|> "unlockFile" :> ReqBody '[JSON] FileLock :> Delete '[JSON] LockResult
+          :<|> "checkLock" :> ReqBody '[JSON] FileLock :> Get '[JSON] LockResult
 
 
 lockToDoc :: FileLock -> Document
@@ -87,7 +87,7 @@ lockServer = lockFile
 
   where
 
-    lockFile :: FileLock -> Handler ResponseMessage
+    lockFile :: FileLock -> Handler LockResult
     lockFile fl = liftIO $ do
       let selector = ["fileName" =: (fileName fl), "fileServer" =: (fileServer fl)]
       lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
@@ -97,15 +97,15 @@ lockServer = lockFile
         Nothing -> do 
           let flDoc = lockToDoc fl
           insertId <- withMongoDbConnection $ insert "locks" flDoc
-          return $ ResponseMessage $ "SUCCESS " ++ (fileName fl) ++ " locked"
+          return $ LockResult $ "SUCCESS " ++ (fileName fl) ++ " locked"
         -- Yes -> Return an error
         Just l -> do
           let lockOwner = extractString "owner" l
           let fname = extractString "fileName" l
-          return $ ResponseMessage $ "ERROR " ++ fname ++ " already locked by " ++ lockOwner
+          return $ LockResult $ "ERROR " ++ fname ++ " already locked by " ++ lockOwner
       
 
-    unlockFile :: FileLock -> Handler ResponseMessage
+    unlockFile :: FileLock -> Handler LockResult
     unlockFile fl = liftIO $ do
       let selector = ["fileName" =: (fileName fl), "fileServer" =: (fileServer fl)]
       lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
@@ -113,34 +113,34 @@ lockServer = lockFile
       case lockStatus of
         -- No -> No lock to unlock, return an error
         Nothing -> do
-          return $ ResponseMessage $ "ERROR " ++ (fileName fl) ++ " already unlocked"
+          return $ LockResult $ "ERROR " ++ (fileName fl) ++ " already unlocked"
         -- Yes -> Does user have permission to unlock?
         Just l -> do
           let lockOwner = extractString "owner" l
           case ((owner fl) == lockOwner) of
             True -> do
               deleteStatus <- withMongoDbConnection $ deleteOne $ select selector "locks"
-              return $ ResponseMessage $ "SUCCESS " ++ (fileName fl) ++ " unlocked"
+              return $ LockResult $ "SUCCESS " ++ (fileName fl) ++ " unlocked"
             False -> do
-              return $ ResponseMessage $ "ERROR " ++ (fileName fl) ++ " locked by " ++ lockOwner ++ ". Only they can unlock it"
+              return $ LockResult $ "ERROR " ++ (fileName fl) ++ " locked by " ++ lockOwner ++ ". Only they can unlock it"
 
-      -- return $ ResponseMessage (show fl)
+      -- return $ LockResult (show fl)
 
-    checkLock :: FileLock -> Handler ResponseMessage
+    checkLock :: FileLock -> Handler LockResult
     checkLock (FileLock name server _owner) = liftIO $ do
       let selector = ["fileName" =: name, "fileServer" =: server]
       lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
       case lockStatus of 
         Nothing -> 
-          return $ ResponseMessage $ "UNLOCKED"
+          return $ LockResult $ "UNLOCKED"
         Just l -> do
           let lockOwner = extractString "owner" l
-          return $ ResponseMessage $ "LOCKED " ++ lockOwner
+          return $ LockResult $ "LOCKED " ++ lockOwner
           -- print lockOwner
           -- print _owner
           -- case (lockOwner == _owner) of
-          --   True -> return $ ResponseMessage $ "LOCKED"
-          --   False -> return $ ResponseMessage $ "File is locked by someone else"
+          --   True -> return $ LockResult $ "LOCKED"
+          --   False -> return $ LockResult $ "File is locked by someone else"
 
 lockApi :: DP.Proxy LockAPI
 lockApi = DP.Proxy
