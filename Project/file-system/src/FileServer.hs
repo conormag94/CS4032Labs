@@ -87,9 +87,9 @@ lockServiceUrl = BaseUrl Http "localhost" 8082 ""
 -- One function for each endpoint in the FileServer.hs API
 lockF :: FileLock -> ClientM LockResult
 unlockF :: FileLock -> ClientM LockResult
-checkF :: FileLock -> ClientM LockResult
+check :: FileLock -> ClientM LockResult
 
-lockF :<|> unlockF :<|> checkF = client lockServiceAPI
+lockF :<|> unlockF :<|> check = client lockServiceAPI
 
 {-------------------------------------------------
      The File Server
@@ -112,9 +112,28 @@ server = getFile
   where 
     getFile :: String -> Handler FileObj
     getFile fname = liftIO $ do
-      let fpath = baseDirectory ++ fname
-      _content <- TextIO.readFile fpath
-      return $ FileObj {name = fname, content = _content}
+      manager <- newManager defaultManagerSettings
+      -- Hardcoded server and owner for debugging
+      let fLock = FileLock {fileName = fname, fileServer = "localhost:8080", owner = "conor"}
+      res <- runClientM (check fLock) (ClientEnv manager lockServiceUrl)
+      case res of 
+        Left err -> do
+          print err
+          return $ FileObj {name = "ERROR", content = "Something went wrong"}
+        Right lockRes -> do
+          case (result lockRes) of
+            "LOCKED" -> do
+              case ((message lockRes) == "conor") of
+                True -> do
+                  let fpath = baseDirectory ++ fname
+                  _content <- TextIO.readFile fpath
+                  return $ FileObj {name = fname, content = _content}
+                False -> do
+                  return $ FileObj {name = (result lockRes), content = (TL.pack (message lockRes))}
+            "UNLOCKED" -> do
+              let fpath = baseDirectory ++ fname
+              _content <- TextIO.readFile fpath
+              return $ FileObj {name = fname, content = _content}
 
     uploadFile :: FileObj -> Handler ResponseMessage
     uploadFile nf = liftIO $ do
