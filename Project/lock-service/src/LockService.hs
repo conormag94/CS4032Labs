@@ -94,11 +94,14 @@ lockServer = locktest --TODO: Remove
     lockFile fl = liftIO $ do
       let selector = ["fileName" =: (fileName fl), "fileServer" =: (fileServer fl)]
       lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
+      -- Is FileLock already in DB?
       case lockStatus of
-        Nothing -> do
+        -- No -> Add it to DB, locking the file
+        Nothing -> do 
           let flDoc = lockToDoc fl
           insertId <- withMongoDbConnection $ insert "locks" flDoc
           return $ ResponseMessage $ "SUCCESS " ++ (fileName fl) ++ " locked"
+        -- Yes -> Return an error
         Just l -> do
           let lockOwner = extractString "owner" l
           let fname = extractString "fileName" l
@@ -107,7 +110,24 @@ lockServer = locktest --TODO: Remove
 
     unlockFile :: FileLock -> Handler ResponseMessage
     unlockFile fl = liftIO $ do
-      return $ ResponseMessage (show fl)
+      let selector = ["fileName" =: (fileName fl), "fileServer" =: (fileServer fl)]
+      lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
+      -- Is FileLock already in DB?
+      case lockStatus of
+        -- No -> No lock to unlock, return an error
+        Nothing -> do
+          return $ ResponseMessage $ "ERROR " ++ (fileName fl) ++ " already unlocked"
+        -- Yes -> Does user have permission to unlock?
+        Just l -> do
+          let lockOwner = extractString "owner" l
+          case ((owner fl) == lockOwner) of
+            True -> do
+              deleteStatus <- withMongoDbConnection $ deleteOne $ select selector "locks"
+              return $ ResponseMessage $ "SUCCESS " ++ (fileName fl) ++ " unlocked"
+            False -> do
+              return $ ResponseMessage $ "ERROR " ++ (fileName fl) ++ " locked by " ++ lockOwner ++ ". Only they can unlock it"
+
+      -- return $ ResponseMessage (show fl)
 
     checkLock :: FileLock -> Handler ResponseMessage
     checkLock (FileLock name server _owner) = liftIO $ do
