@@ -27,9 +27,8 @@ library
                      , text
                      , time
                      , http-media
+                     , http-client
                      , directory
-                     , blaze-markup
-                     , blaze-html
                      , aeson
                      , servant
                      , servant-server

@@ -37,11 +37,6 @@ resolver: lts-7.09
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - '.'
-- location:
-    git: https://github.com/conormag94/CS4032Labs
-    commit: cfd8f7f825825f98f505da96795bf4da3c32920c
-  subdirs:
-  - 'Project/file-system'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps: [servant-0.9.1.1, servant-client-0.9.1.1, servant-server-0.9.1.1, http-api-data-0.3.3]

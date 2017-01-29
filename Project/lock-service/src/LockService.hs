@@ -37,7 +37,13 @@ import qualified Data.Text as DT
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
-import FileServer
+data ResponseMessage = ResponseMessage { response :: String } deriving(Generic)
+
+instance ToJSON ResponseMessage
+instance FromJSON ResponseMessage
+
+instance Show ResponseMessage where
+  show (ResponseMessage r) = show r
 
 data FileLock = FileLock {
     fileName :: String

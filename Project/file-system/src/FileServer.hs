@@ -27,14 +27,14 @@ import Data.String.Conversions
 import Data.Time.Calendar
 import GHC.Generics
 import Network.HTTP.Media ((//), (/:))
+import Network.HTTP.Client
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Servant.API
 import Servant.Server
 import System.Directory
 import Servant.Client
-import Text.Blaze
-import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 import Data.Proxy as DP
@@ -42,6 +42,10 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
 import LockService
+
+{-------------------------------------------------
+     FileServer API - This module serves this API
+-}------------------------------------------------
 
 baseDirectory = "./static-files/"
 

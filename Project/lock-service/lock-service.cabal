@@ -22,7 +22,6 @@ library
                      , base-compat
                      , bson
                      , directory
-                     , file-system
                      , http-client
                      , mtl
                      , mongoDB
