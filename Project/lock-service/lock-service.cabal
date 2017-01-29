@@ -20,10 +20,13 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , base-compat
+                     , bson
                      , directory
                      , file-system
                      , http-client
                      , mtl
+                     , mongoDB
+                     , resourcet
                      , servant
                      , servant-client
                      , servant-server
