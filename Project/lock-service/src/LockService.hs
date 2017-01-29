@@ -56,13 +56,29 @@ type LockAPI = "locktest" :> Get '[JSON] ResponseMessage
 insertTest :: Document
 insertTest = ["name" =: ("insertTest.txt" :: String), "data" =: ("It worked" :: String)]
 
+lockToDoc :: FileLock -> Document
+lockToDoc (FileLock {fileName = name, fileServer = server, owner = o}) = 
+  ["fileName" =: name, "fileServer" =: server, "owner" =: o]
+
+-- isFileLocked :: FileLock -> Action IO Bool
+-- isFileLocked (FileLock {fileName = name, fileServer = server, owner = o}) = do
+--   let selector = ["fileName" =: name, "fileServer" =: server, "owner" =: o]
+--   lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
+--   case lockStatus of 
+--     Nothing -> return False
+--     Just _ -> return True
+
+-- Returns the Value of a Field in a Document
+extractString :: Label -> Document -> String
+extractString label = typed . (valueAt label)
+
 startApp :: IO ()
 startApp = do 
   putStrLn "Lock server running on localhost:8082"
   run 8082 app
 
 lockServer :: Server LockAPI
-lockServer = locktest
+lockServer = locktest --TODO: Remove
         :<|> lockFile
         :<|> unlockFile
         :<|> checkLock
@@ -73,20 +89,41 @@ lockServer = locktest
       insertId <- withMongoDbConnection $ insert "locks" insertTest
       return $ ResponseMessage {response = "ID: " ++ (show insertId)}
 
+
     lockFile :: FileLock -> Handler ResponseMessage
     lockFile fl = liftIO $ do
-      return $ ResponseMessage $ "TODO: Lock " ++ (fileName fl)
+      let selector = ["fileName" =: (fileName fl), "fileServer" =: (fileServer fl)]
+      lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
+      case lockStatus of
+        Nothing -> do
+          let flDoc = lockToDoc fl
+          insertId <- withMongoDbConnection $ insert "locks" flDoc
+          return $ ResponseMessage $ "SUCCESS " ++ (fileName fl) ++ " locked"
+        Just l -> do
+          let lockOwner = extractString "owner" l
+          let fname = extractString "fileName" l
+          return $ ResponseMessage $ "ERROR " ++ fname ++ " already locked by " ++ lockOwner
+      
 
     unlockFile :: FileLock -> Handler ResponseMessage
     unlockFile fl = liftIO $ do
       return $ ResponseMessage (show fl)
 
     checkLock :: FileLock -> Handler ResponseMessage
-    checkLock fl = liftIO $ do
-      return $ ResponseMessage $ "TODO: Check lock status of " ++ (fileName fl)
-
-
-
+    checkLock (FileLock name server _owner) = liftIO $ do
+      let selector = ["fileName" =: name, "fileServer" =: server]
+      lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
+      case lockStatus of 
+        Nothing -> 
+          return $ ResponseMessage $ "UNLOCKED"
+        Just l -> do
+          let lockOwner = extractString "owner" l
+          return $ ResponseMessage $ "LOCKED " ++ lockOwner
+          -- print lockOwner
+          -- print _owner
+          -- case (lockOwner == _owner) of
+          --   True -> return $ ResponseMessage $ "LOCKED"
+          --   False -> return $ ResponseMessage $ "File is locked by someone else"
 
 lockApi :: DP.Proxy LockAPI
 lockApi = DP.Proxy
