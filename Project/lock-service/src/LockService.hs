@@ -37,13 +37,13 @@ import qualified Data.Text as DT
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
 
-data LockResult = LockResult { result :: String } deriving(Generic)
+data LockResult = LockResult { 
+    result :: String
+  , message :: String 
+} deriving(Generic, Show, Read)
 
 instance ToJSON LockResult
 instance FromJSON LockResult
-
-instance Show LockResult where
-  show (LockResult r) = show r
 
 data FileLock = FileLock {
     fileName :: String
@@ -97,12 +97,12 @@ lockServer = lockFile
         Nothing -> do 
           let flDoc = lockToDoc fl
           insertId <- withMongoDbConnection $ insert "locks" flDoc
-          return $ LockResult $ "SUCCESS " ++ (fileName fl) ++ " locked"
+          return $ LockResult {result = "SUCCESS",  message = ((fileName fl) ++ " locked")}
         -- Yes -> Return an error
         Just l -> do
           let lockOwner = extractString "owner" l
           let fname = extractString "fileName" l
-          return $ LockResult $ "ERROR " ++ fname ++ " already locked by " ++ lockOwner
+          return $ LockResult {result = "ERROR", message = (fname ++ " already locked by " ++ lockOwner)}
       
 
     unlockFile :: FileLock -> Handler LockResult
@@ -113,16 +113,16 @@ lockServer = lockFile
       case lockStatus of
         -- No -> No lock to unlock, return an error
         Nothing -> do
-          return $ LockResult $ "ERROR " ++ (fileName fl) ++ " already unlocked"
+          return $ LockResult {result = "ERROR", message = ((fileName fl) ++ " already unlocked")}
         -- Yes -> Does user have permission to unlock?
         Just l -> do
           let lockOwner = extractString "owner" l
           case ((owner fl) == lockOwner) of
             True -> do
               deleteStatus <- withMongoDbConnection $ deleteOne $ select selector "locks"
-              return $ LockResult $ "SUCCESS " ++ (fileName fl) ++ " unlocked"
+              return $ LockResult {result = "SUCCESS", message =  ((fileName fl) ++ " unlocked")}
             False -> do
-              return $ LockResult $ "ERROR " ++ (fileName fl) ++ " locked by " ++ lockOwner ++ ". Only they can unlock it"
+              return $ LockResult {result = "ERROR", message = ((fileName fl) ++ " locked by " ++ lockOwner ++ ". Only they can unlock it")}
 
       -- return $ LockResult (show fl)
 
@@ -132,10 +132,10 @@ lockServer = lockFile
       lockStatus <- withMongoDbConnection $ findOne $ select selector "locks"
       case lockStatus of 
         Nothing -> 
-          return $ LockResult $ "UNLOCKED"
+          return $ LockResult {result = "UNLOCKED", message = ""}
         Just l -> do
           let lockOwner = extractString "owner" l
-          return $ LockResult $ "LOCKED " ++ lockOwner
+          return $ LockResult {result = "LOCKED", message = lockOwner}
           -- print lockOwner
           -- print _owner
           -- case (lockOwner == _owner) of
