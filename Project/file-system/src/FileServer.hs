@@ -30,14 +30,18 @@ import Network.HTTP.Media ((//), (/:))
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
+import Servant.Server
 import System.Directory
+import Servant.Client
 import Text.Blaze
 import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
-
+import Data.Proxy as DP
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.IO as TextIO
+
+import LockService
 
 baseDirectory = "./static-files/"
 
@@ -66,6 +70,27 @@ type API = "files" :> Capture "filename" String :> Get '[JSON] FileObj
       :<|> "modify" :> ReqBody '[JSON] FileObj :> Post '[JSON] FileObj
       :<|> "list" :> Get '[JSON] [FilePath]
       :<|> "getReadme" :> Get '[JSON] FileObj
+
+{-------------------------------------------------
+     LockService API - This module queries this API
+-}------------------------------------------------
+
+lockServiceAPI :: DP.Proxy LockAPI
+lockServiceAPI = DP.Proxy
+
+lockServiceUrl :: BaseUrl
+lockServiceUrl = BaseUrl Http "localhost" 8082 ""
+
+-- One function for each endpoint in the FileServer.hs API
+lockF :: FileLock -> ClientM ResponseMessage
+unlockF :: FileLock -> ClientM ResponseMessage
+checkF :: FileLock -> ClientM ResponseMessage
+
+lockF :<|> unlockF :<|> checkF = client lockServiceAPI
+
+{-------------------------------------------------
+     The File Server
+-}------------------------------------------------
 
 startFileServer :: IO ()
 startFileServer = do 

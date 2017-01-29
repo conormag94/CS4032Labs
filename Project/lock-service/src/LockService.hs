@@ -9,7 +9,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module LockService (startApp) where
+module LockService (LockAPI(..), FileLock(..), startApp) where
 
 import Prelude ()
 import Prelude.Compat
