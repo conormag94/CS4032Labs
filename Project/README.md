@@ -8,6 +8,7 @@ These projects talk to each other by importing their APIs in their `stack.yaml` 
  - Client
  - Caching (in Client)
  - Directory Service
+ - Lock service (in progress)
  
 ## FileObj
 This is the datatype returned by a `GET` request to the file server and used as the request body in a `POST` request.
@@ -77,3 +78,15 @@ stack exec directory-service-exe
 ```
 
 This will run on `localhost:8081`
+
+## Lock Service (in progress)
+#### General Approach:
+My approach is for the lock server to keep a database of `FileLock` data types. 
+```haskell
+data FileLock = FileLock {
+    fileName :: String
+  , fileServer :: String
+  , owner :: String
+}
+```
+When a client wants to lock a file, the lock server adds one of these to its database. Before a file server allows access to a particular file, it will ask the lock server if there is a file lock present for the file. If there is, then the user requesting access must be the same as the owner of the lock. When a file is unlocked, this `FileLock` object is deleted from the database. **A file is considered locked  if there is a FileLock for it in the server's database. A file is considered unlocked if there is no FileLock present**
