@@ -72,6 +72,7 @@ lockToDoc (FileLock {fileName = name, fileServer = server, owner = o}) =
 --     Just _ -> return True
 
 -- Returns the Value of a Field in a Document
+-- From http://stevepowell.ca/mongo-haskell.html
 extractString :: Label -> Document -> String
 extractString label = typed . (valueAt label)
 
