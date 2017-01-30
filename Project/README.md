@@ -8,7 +8,7 @@ These projects talk to each other by importing their APIs in their `stack.yaml` 
  - Client
  - Caching (in Client)
  - Directory Service
- - Lock service (in progress)
+ - Lock service
  
 ## FileObj
 This is the datatype returned by a `GET` request to the file server and used as the request body in a `POST` request.
@@ -60,7 +60,7 @@ Responsible for finding which file server has a particular file and also for lis
 
 This will run on `localhost:8081`
 
-## Lock Service (in progress)
+## Lock Service
 My approach is for the lock server to keep a database of `FileLock` data types. To lock a file, a `FileLock` for the file is stored in the mongoDB database. To unlock a file, its `FileLock` is deleted from the database. **So, a file is considered locked  if there is a FileLock for it in the server's database. A file is considered unlocked if there is no FileLock present**
 ```haskell
 data FileLock = FileLock {
@@ -84,12 +84,12 @@ data FileLock = FileLock {
   - **If the file was locked by somebody else:** return an error message stating as much
 - **If it is unlocked:** return an error message saying the file is not locked
 
-#### Integration with Client + File Server (in progress)
-The lock service has a `checkLock` endpoint which returns if a file is locked or not. This can be used by the file server to make sure a Client isn't trying to access a file that is locked by someone else. This is in progress.
+#### Integration with Client (in progress) + File Server (implemented)
+The lock service has a `checkLock` endpoint which returns if a file is locked or not. This is used by the file server to make sure a Client isn't trying to access a file that is locked by someone else. The file server will deny access to a locked file if the client doesn't own the lock on the file. Since I have no authentication service set up, the owner is always set to the string "conor"
+
+At the moment the lock service hasn't been integrated with the client so it must be used with cURL, attaching a JSON body in the same format as a `FileLock`.
 
 ### Lock service usage
 - `stack setup` if not already executed
 - Have mongoDB running on default port with a database called "locks"
 - From `Project/directory-service`, run `./run.sh`
-
-At the moment this hasn't been integrated with the client so it must be used with cURL.
